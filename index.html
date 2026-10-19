@@ -1,0 +1,2393 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BİLFEN Roketi Uzayda: Kodlama Yolculuğu</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Fredoka -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- FontAwesome İkonları -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            font-family: 'Fredoka', sans-serif;
+            overflow: hidden;
+            user-select: none;
+            background-color: #090d16;
+            color: #ffffff;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.6);
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #3b82f6;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #60a5fa;
+        }
+
+        .code-btn {
+            transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 0 rgba(0,0,0,0.3);
+        }
+        .code-btn:active {
+            transform: translateY(3px);
+            box-shadow: 0 1px 0 rgba(0,0,0,0.3);
+        }
+
+        .executing-block {
+            animation: pulse-ring 1s infinite;
+            border-color: #fde047 !important;
+            box-shadow: 0 0 15px rgba(253, 224, 71, 0.7) !important;
+            transform: scale(1.03);
+        }
+
+        @keyframes pulse-ring {
+            0% { box-shadow: 0 0 0 0 rgba(253, 224, 71, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(253, 224, 71, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(253, 224, 71, 0); }
+        }
+
+        .float-anim {
+            animation: floating 3s ease-in-out infinite;
+        }
+        @keyframes floating {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-8px); }
+        }
+
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.82);
+            backdrop-filter: blur(12px);
+            border: 2px solid rgba(56, 189, 248, 0.3);
+        }
+
+        #scene-wrapper {
+            position: relative;
+            flex: 1 1 0%;
+            min-width: 300px;
+            min-height: 300px;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, #0f172a 0%, #050811 100%);
+        }
+
+        #canvas-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        #canvas-container canvas {
+            display: block;
+            width: 100% !important;
+            height: 100% !important;
+        }
+    </style>
+</head>
+<body class="h-screen w-screen flex flex-col bg-slate-950">
+
+    <!-- ÜST BİLGİ ÇUBUĞU (HEADER) -->
+    <header class="h-16 glass-panel border-b-2 border-sky-500/30 px-4 flex items-center justify-between z-30 shrink-0">
+        <!-- BİLFEN Logo ve Yeni Oyun Adı -->
+        <div class="flex items-center space-x-3">
+            <div class="bg-white px-3 py-1.5 rounded-xl shadow-lg shadow-sky-500/20 border-2 border-sky-300/60 flex items-center justify-center shrink-0">
+                <svg class="h-8 sm:h-9 w-auto" viewBox="0 0 330 115" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="BİLFEN Logo">
+                    <defs>
+                        <radialGradient id="bilfenSphereGrad" cx="62%" cy="68%" r="65%" fx="65%" fy="72%">
+                            <stop offset="0%" stop-color="#ffffff"/>
+                            <stop offset="32%" stop-color="#5b8cc7"/>
+                            <stop offset="68%" stop-color="#0b3b75"/>
+                            <stop offset="100%" stop-color="#051e42"/>
+                        </radialGradient>
+                        <linearGradient id="bilfenTextGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" stop-color="#072b59"/>
+                            <stop offset="50%" stop-color="#0a4685"/>
+                            <stop offset="100%" stop-color="#0d5ca6"/>
+                        </linearGradient>
+                    </defs>
+                    <g transform="translate(76, 31) rotate(-22)">
+                        <path d="M -42 0 A 42 9.5 0 0 1 42 0" stroke="#083872" stroke-width="4.2" fill="none"/>
+                    </g>
+                    <circle cx="76" cy="31" r="21" fill="url(#bilfenSphereGrad)"/>
+                    <g transform="translate(76, 31) rotate(-22)">
+                        <path d="M 42 0 A 42 9.5 0 0 1 -42 0" stroke="#083872" stroke-width="5.2" fill="none"/>
+                        <path d="M 45 0 A 45 10.5 0 0 1 -45 0" stroke="#ffffff" stroke-width="1.2" fill="none" opacity="0.6"/>
+                    </g>
+                    <text x="6" y="102" fill="url(#bilfenTextGrad)" font-family="Georgia, 'Times New Roman', serif" font-weight="bold" font-size="60" letter-spacing="5" textLength="316" lengthAdjust="spacingAndGlyphs">BILFEN</text>
+                </svg>
+            </div>
+
+            <div class="hidden sm:block">
+                <h1 class="text-base sm:text-lg md:text-xl font-bold bg-gradient-to-r from-sky-300 via-white to-amber-300 bg-clip-text text-transparent leading-tight">
+                    BİLFEN Roketi Uzayda
+                </h1>
+                <p class="text-[11px] text-sky-300/80 hidden md:block">Kodlama Yolculuğu (3B Algoritma Oyunu)</p>
+            </div>
+        </div>
+
+        <!-- Seviye Seçici ve Harita Butonu -->
+        <div class="flex items-center space-x-2">
+            <button onclick="changeLevelRelative(-1)" class="w-9 h-9 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-600 flex items-center justify-center text-slate-200 transition" title="Önceki Bölüm">
+                <i class="fa-solid fa-chevron-left text-xs"></i>
+            </button>
+
+            <button onclick="openLevelMapModal()" class="px-3.5 py-2 rounded-2xl bg-slate-900/90 hover:bg-slate-800 border-2 border-sky-500/40 flex items-center space-x-2.5 transition shadow-lg">
+                <i class="fa-solid fa-map-location-dot text-amber-400"></i>
+                <div class="text-left">
+                    <div id="header-level-title" class="text-xs sm:text-sm font-bold text-white leading-none">Bölüm 1 / 16</div>
+                    <div id="header-level-sub" class="text-[10px] text-sky-300 leading-tight mt-0.5">Ay (Keşif)</div>
+                </div>
+                <i class="fa-solid fa-caret-down text-slate-400 text-xs ml-1"></i>
+            </button>
+
+            <button onclick="changeLevelRelative(1)" class="w-9 h-9 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-600 flex items-center justify-center text-slate-200 transition" title="Sonraki Bölüm">
+                <i class="fa-solid fa-chevron-right text-xs"></i>
+            </button>
+        </div>
+
+        <!-- İstatistikler ve Kontroller -->
+        <div class="flex items-center space-x-2 sm:space-x-3">
+            <div id="star-badge-box" class="flex items-center space-x-2 bg-amber-500/20 border border-amber-400/40 px-3 py-1.5 rounded-xl transition-all" title="Bu bölümde toplanan enerji yıldızları">
+                <i class="fa-solid fa-star text-amber-400 animate-spin" style="animation-duration: 6s;"></i>
+                <span id="star-counter" class="font-bold text-amber-300 text-xs sm:text-sm">0 / 2</span>
+                <span id="star-req-tag" class="hidden text-[10px] bg-rose-500 text-white px-1.5 py-0.5 rounded font-bold uppercase">Zorunlu</span>
+            </div>
+
+            <button onclick="openLevelMapModal()" class="hidden md:flex items-center space-x-1.5 bg-slate-800/90 hover:bg-slate-700 border border-amber-400/40 px-3 py-1.5 rounded-xl text-xs font-bold text-amber-200 transition" title="Haritada Bölüm Yıldızlarını Gör">
+                <i class="fa-solid fa-trophy text-amber-400"></i>
+                <span id="total-stars-header">0 / 48 ⭐</span>
+            </button>
+
+            <button id="sound-toggle" class="w-10 h-10 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-600 flex items-center justify-center text-sky-300 transition" title="Sesi Aç/Kapat">
+                <i class="fa-solid fa-volume-high" id="sound-icon"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- ANA İÇERİK -->
+    <main class="flex-1 flex flex-col lg:flex-row overflow-hidden relative w-full h-full">
+        
+        <!-- 3B UZAY SAHNESİ -->
+        <div id="scene-wrapper">
+            <div id="canvas-container"></div>
+
+            <div id="mission-card" class="absolute top-3 left-3 max-w-xs sm:max-w-md glass-panel p-3.5 rounded-2xl shadow-xl pointer-events-auto border-l-4 border-l-amber-400 transition-all duration-200 z-20">
+                <div class="flex items-center justify-between mb-1.5 gap-2">
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <span id="level-badge" class="text-[11px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-sky-500/30 text-sky-200 border border-sky-400/40">
+                            Bölüm 1 / 16
+                        </span>
+                        <span id="target-planet-name" class="text-xs font-semibold text-amber-300 flex items-center gap-1">
+                            <i class="fa-solid fa-moon"></i> Hedef: Ay
+                        </span>
+                        <span id="level-saved-stars-badge" class="text-xs font-bold text-amber-400 bg-amber-500/15 px-2 py-0.5 rounded-full border border-amber-400/30 hidden">
+                            ⭐⭐⭐
+                        </span>
+                    </div>
+                    <button onclick="toggleMissionCard(false)" class="w-7 h-7 rounded-lg bg-slate-800/90 hover:bg-rose-500/30 border border-slate-600 hover:border-rose-400/60 text-slate-300 hover:text-rose-300 flex items-center justify-center transition shrink-0" title="Görev Bilgisini Kapat">
+                        <i class="fa-solid fa-xmark text-sm"></i>
+                    </button>
+                </div>
+                <h2 id="level-title" class="text-base sm:text-lg font-bold text-white mb-1">Bölüm 1: Ay'a İlk Adım</h2>
+                <p id="level-desc" class="text-xs sm:text-sm text-slate-200 leading-snug">
+                    BİLFEN Roketi yola çıkıyor! Roketi 3 birim ileri götürerek Ay'a ulaştır ve 'Gezegeni Tara ve Keşfet!' bloğunu çalıştır.
+                </p>
+                <div class="mt-2 pt-2 border-t border-slate-700/70 flex items-center justify-between text-[11px] text-slate-300">
+                    <span id="mission-type-label" class="flex items-center gap-1 text-emerald-300 font-medium">
+                        <i class="fa-solid fa-compass"></i> Gezegen Keşif Görevi
+                    </span>
+                    <span id="ideal-blocks-label" class="text-sky-300 font-semibold">
+                        İdeal Kod: ~4 Blok
+                    </span>
+                </div>
+            </div>
+
+            <button id="show-mission-btn" onclick="toggleMissionCard(true)" class="hidden absolute top-3 left-3 glass-panel px-3.5 py-2 rounded-xl shadow-lg border border-amber-400/50 hover:bg-slate-800/90 text-xs font-bold text-amber-300 flex items-center space-x-2 transition z-20" title="Görev Açıklamasını Göster">
+                <i class="fa-solid fa-clipboard-list text-sm"></i>
+                <span>Görev Bilgisi</span>
+            </button>
+
+            <div class="absolute top-3 right-3 flex flex-col space-y-2 z-20">
+                <div class="glass-panel p-1.5 rounded-2xl flex flex-col space-y-1">
+                    <span class="text-[10px] text-center text-sky-300 font-semibold px-1">Kamera</span>
+                    <button onclick="setCameraMode('free')" id="cam-free" class="cam-btn px-2.5 py-1.5 rounded-xl text-xs font-medium bg-sky-600 text-white flex items-center gap-1.5 transition" title="Fare ile döndür">
+                        <i class="fa-solid fa-cube"></i> <span class="hidden sm:inline">Serbest 3B</span>
+                    </button>
+                    <button onclick="setCameraMode('top')" id="cam-top" class="cam-btn px-2.5 py-1.5 rounded-xl text-xs font-medium hover:bg-slate-800 text-slate-300 flex items-center gap-1.5 transition" title="Kuşbakışı görünüm">
+                        <i class="fa-solid fa-arrows-to-dot"></i> <span class="hidden sm:inline">Kuşbakışı</span>
+                    </button>
+                    <button onclick="setCameraMode('follow')" id="cam-follow" class="cam-btn px-2.5 py-1.5 rounded-xl text-xs font-medium hover:bg-slate-800 text-slate-300 flex items-center gap-1.5 transition" title="Roketi takip et">
+                        <i class="fa-solid fa-video"></i> <span class="hidden sm:inline">Takip Et</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="absolute bottom-3 left-3 glass-panel px-3 py-1.5 rounded-xl text-xs text-slate-300 hidden sm:flex items-center space-x-2 pointer-events-none z-20">
+                <i class="fa-solid fa-hand-pointer text-sky-400"></i>
+                <span>Sahneyi döndürmek için sürükleyin, yakınlaşmak için kaydırın.</span>
+            </div>
+
+            <div id="status-toast" class="absolute bottom-4 left-1/2 transform -translate-x-1/2 glass-panel px-5 py-2.5 rounded-2xl border-2 border-sky-400 shadow-2xl flex items-center space-x-3 transition-all duration-300 opacity-0 pointer-events-none translate-y-4 z-30">
+                <i id="status-icon" class="fa-solid fa-circle-info text-sky-400 text-lg"></i>
+                <span id="status-text" class="font-semibold text-sm text-white">Komutlar çalıştırılıyor...</span>
+            </div>
+        </div>
+
+        <!-- GÖRSEL KODLAMA PANELİ -->
+        <div class="w-full lg:w-[440px] xl:w-[480px] h-[50%] lg:h-full glass-panel border-t-2 lg:border-t-0 lg:border-l-2 border-sky-500/30 flex flex-col z-20 shrink-0">
+            
+            <div class="p-3.5 border-b border-slate-700/80 bg-slate-900/50">
+                <div class="flex items-center justify-between mb-2">
+                    <h3 class="text-xs sm:text-sm font-bold uppercase tracking-wider text-sky-300 flex items-center gap-2">
+                        <i class="fa-solid fa-puzzle-piece text-amber-400"></i> Komut Blokları (Tıkla Ekle)
+                    </h3>
+                    <span class="text-xs text-slate-400" id="active-target-indicator">Ana Kuyruk</span>
+                </div>
+
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    <button onclick="addCommand('FORWARD')" class="code-btn bg-gradient-to-b from-blue-500 to-blue-600 hover:from-blue-400 hover:to-blue-500 text-white font-bold py-2.5 px-3 rounded-xl flex items-center space-x-2 border border-blue-300/40 text-xs sm:text-sm">
+                        <div class="w-7 h-7 rounded-lg bg-blue-700/60 flex items-center justify-center shrink-0">
+                            <i class="fa-solid fa-arrow-up"></i>
+                        </div>
+                        <span>İleri Git</span>
+                    </button>
+
+                    <button onclick="addCommand('LEFT')" class="code-btn bg-gradient-to-b from-purple-500 to-purple-600 hover:from-purple-400 hover:to-purple-500 text-white font-bold py-2.5 px-3 rounded-xl flex items-center space-x-2 border border-purple-300/40 text-xs sm:text-sm">
+                        <div class="w-7 h-7 rounded-lg bg-purple-700/60 flex items-center justify-center shrink-0">
+                            <i class="fa-solid fa-rotate-left"></i>
+                        </div>
+                        <span>Sola Dön</span>
+                    </button>
+
+                    <button onclick="addCommand('RIGHT')" class="code-btn bg-gradient-to-b from-indigo-500 to-indigo-600 hover:from-indigo-400 hover:to-indigo-500 text-white font-bold py-2.5 px-3 rounded-xl flex items-center space-x-2 border border-indigo-300/40 text-xs sm:text-sm">
+                        <div class="w-7 h-7 rounded-lg bg-indigo-700/60 flex items-center justify-center shrink-0">
+                            <i class="fa-solid fa-rotate-right"></i>
+                        </div>
+                        <span>Sağa Dön</span>
+                    </button>
+
+                    <button onclick="addCommand('LOOP')" class="code-btn bg-gradient-to-b from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white font-bold py-2.5 px-3 rounded-xl flex items-center space-x-2 border border-amber-300/40 text-xs sm:text-sm">
+                        <div class="w-7 h-7 rounded-lg bg-orange-700/60 flex items-center justify-center shrink-0">
+                            <i class="fa-solid fa-repeat"></i>
+                        </div>
+                        <span>Tekrarla</span>
+                    </button>
+
+                    <button onclick="addCommand('SCAN')" class="code-btn col-span-2 bg-gradient-to-b from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-bold py-2.5 px-3 rounded-xl flex items-center justify-center space-x-2 border border-emerald-300/40 text-xs sm:text-sm">
+                        <div class="w-7 h-7 rounded-lg bg-teal-700/60 flex items-center justify-center shrink-0">
+                            <i id="scan-btn-icon" class="fa-solid fa-satellite-dish"></i>
+                        </div>
+                        <span id="scan-btn-label">Gezegeni Keşfet!</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Program Kuyruğu -->
+            <div class="flex-1 flex flex-col overflow-hidden p-3.5 bg-slate-950/40">
+                <div class="flex items-center justify-between mb-2">
+                    <div class="flex items-center space-x-2">
+                        <h3 class="text-xs sm:text-sm font-bold uppercase tracking-wider text-amber-300 flex items-center gap-1.5">
+                            <i class="fa-solid fa-microchip"></i> Roket Programı
+                        </h3>
+                        <span id="block-count-badge" class="text-xs px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700">
+                            0 Blok
+                        </span>
+                    </div>
+                    <button onclick="clearWorkspace()" class="text-xs text-rose-400 hover:text-rose-300 flex items-center gap-1 font-medium px-2 py-1 rounded-lg hover:bg-rose-500/10 transition" title="Bu bölümdeki kodları temizle">
+                        <i class="fa-solid fa-trash-can"></i> Temizle
+                    </button>
+                </div>
+
+                <div id="workspace-list" class="flex-1 overflow-y-auto space-y-2 pr-1 pb-4">
+                    <div class="h-44 border-2 border-dashed border-slate-700 rounded-2xl flex flex-col items-center justify-center text-slate-400 p-4 text-center">
+                        <i class="fa-solid fa-rocket text-3xl text-slate-600 mb-2"></i>
+                        <p class="text-xs sm:text-sm font-medium">Henüz komut eklenmedi.</p>
+                        <p class="text-xs text-slate-500 mt-1">Yukarıdaki renkli bloklara tıklayarak roketin rotasını oluştur!</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Çalıştırma Kontrolleri -->
+            <div class="p-3.5 border-t border-slate-800 bg-slate-900/90 flex items-center space-x-3">
+                <button id="run-btn" onclick="runProgram()" class="code-btn flex-1 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-white font-bold py-3 px-5 rounded-2xl flex items-center justify-center space-x-2 text-base border border-green-300/40 shadow-lg shadow-green-600/20">
+                    <i class="fa-solid fa-play"></i>
+                    <span>KODU ÇALIŞTIR</span>
+                </button>
+
+                <button id="reset-btn" onclick="resetLevelState()" class="code-btn bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 px-4 rounded-2xl flex items-center justify-center space-x-2 text-base border border-slate-500/40" title="Kodları silmeden roketi başlangıç noktasına döndürür">
+                    <i class="fa-solid fa-rotate-left"></i>
+                    <span>Sıfırla</span>
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- HARİTA MODALI -->
+    <div id="level-map-modal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+        <div class="glass-panel max-w-4xl w-full rounded-3xl p-6 border-2 border-sky-400/50 shadow-2xl flex flex-col max-h-[88vh]">
+            <div class="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-slate-700">
+                <div class="flex items-center space-x-3">
+                    <div class="bg-white px-2.5 py-1 rounded-xl shadow border border-sky-300 flex items-center justify-center">
+                        <svg class="h-7 w-auto" viewBox="0 0 330 115" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <g transform="translate(76, 31) rotate(-22)">
+                                <path d="M -42 0 A 42 9.5 0 0 1 42 0" stroke="#083872" stroke-width="4.2" fill="none"/>
+                            </g>
+                            <circle cx="76" cy="31" r="21" fill="url(#bilfenSphereGrad)"/>
+                            <g transform="translate(76, 31) rotate(-22)">
+                                <path d="M 42 0 A 42 9.5 0 0 1 -42 0" stroke="#083872" stroke-width="5.2" fill="none"/>
+                            </g>
+                            <text x="6" y="102" fill="url(#bilfenTextGrad)" font-family="Georgia, 'Times New Roman', serif" font-weight="bold" font-size="60" letter-spacing="5" textLength="316" lengthAdjust="spacingAndGlyphs">BILFEN</text>
+                        </svg>
+                    </div>
+                    <div>
+                        <h2 class="text-lg sm:text-xl font-bold text-white">BİLFEN Roketi Uzayda - Görev Haritası</h2>
+                        <p class="text-xs text-slate-300">Bölümleri kaç yıldızla geçtiğini görebilir, önceki bölümlere tıklayıp yazdığın kodları inceleyebilirsin.</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center space-x-2">
+                    <div class="bg-amber-500/20 border border-amber-400/50 px-3 py-1.5 rounded-xl flex items-center space-x-2">
+                        <i class="fa-solid fa-trophy text-amber-400"></i>
+                        <span id="map-total-stars" class="text-xs sm:text-sm font-bold text-amber-200">Toplam: 0 / 48 ⭐</span>
+                    </div>
+
+                    <button onclick="resetAllGameProgress()" class="px-3 py-1.5 rounded-xl bg-rose-500/20 hover:bg-rose-500/40 border border-rose-400/50 text-rose-200 text-xs font-bold flex items-center space-x-1.5 transition">
+                        <i class="fa-solid fa-rotate"></i>
+                        <span>Tüm Oyunu Sıfırla</span>
+                    </button>
+
+                    <button onclick="closeLevelMapModal()" class="w-9 h-9 rounded-xl bg-slate-800 hover:bg-rose-500/30 text-slate-300 hover:text-rose-300 flex items-center justify-center transition">
+                        <i class="fa-solid fa-xmark text-lg"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="overflow-y-auto py-4 space-y-5 pr-1">
+                <div>
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-sky-300 mb-2.5 flex items-center gap-2">
+                        <i class="fa-solid fa-rocket"></i> Aşama 1: Güneş Sistemi Gezegenlerini Keşfet (Bölüm 1 - 10)
+                    </h3>
+                    <div id="map-phase-1" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2.5"></div>
+                </div>
+
+                <div>
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-amber-300 mb-2.5 flex items-center gap-2">
+                        <i class="fa-solid fa-star"></i> Aşama 2: Dünya'ya Dönüş İçin Yıldız Enerjisi Topla! (Bölüm 11 - 16)
+                    </h3>
+                    <div id="map-phase-2" class="grid grid-cols-2 sm:grid-cols-3 gap-2.5"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- BAŞARI MODALI -->
+    <div id="victory-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-300">
+        <div class="glass-panel max-w-md w-full rounded-3xl p-6 border-2 border-amber-400/60 shadow-2xl text-center relative overflow-hidden transform scale-95 transition-transform duration-300" id="victory-card">
+            <div class="absolute -top-20 -left-20 w-48 h-48 bg-amber-500/20 rounded-full blur-3xl pointer-events-none"></div>
+            <div class="absolute -bottom-20 -right-20 w-48 h-48 bg-sky-500/20 rounded-full blur-3xl pointer-events-none"></div>
+
+            <div class="flex justify-center mb-3">
+                <div class="bg-white px-3.5 py-1 rounded-xl shadow-md border border-sky-200 inline-flex items-center">
+                    <svg class="h-6 w-auto" viewBox="0 0 330 115" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <g transform="translate(76, 31) rotate(-22)">
+                            <path d="M -42 0 A 42 9.5 0 0 1 42 0" stroke="#083872" stroke-width="4.2" fill="none"/>
+                        </g>
+                        <circle cx="76" cy="31" r="21" fill="url(#bilfenSphereGrad)"/>
+                        <g transform="translate(76, 31) rotate(-22)">
+                            <path d="M 42 0 A 42 9.5 0 0 1 -42 0" stroke="#083872" stroke-width="5.2" fill="none"/>
+                        </g>
+                        <text x="6" y="102" fill="url(#bilfenTextGrad)" font-family="Georgia, 'Times New Roman', serif" font-weight="bold" font-size="60" letter-spacing="5" textLength="316" lengthAdjust="spacingAndGlyphs">BILFEN</text>
+                    </svg>
+                </div>
+            </div>
+
+            <div class="w-16 h-16 mx-auto mb-2 rounded-full bg-gradient-to-tr from-amber-400 to-orange-500 p-1 shadow-xl float-anim flex items-center justify-center">
+                <div class="w-full h-full rounded-full bg-slate-900 flex items-center justify-center">
+                    <i id="modal-planet-icon" class="fa-solid fa-globe text-3xl text-amber-400"></i>
+                </div>
+            </div>
+
+            <div id="modal-badge" class="inline-block px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 text-xs font-bold uppercase mb-2">
+                🎉 Görev Başarıyla Tamamlandı!
+            </div>
+
+            <h2 id="modal-title" class="text-2xl font-bold text-white mb-1">Ay Keşfedildi!</h2>
+            <p id="modal-code-stats" class="text-xs text-sky-300 mb-2">Kullanılan Kod: 2 Blok | Toplanan Yıldız: 2/2</p>
+            
+            <div id="modal-stars" class="flex justify-center space-x-2 my-3 text-2xl"></div>
+
+            <div class="bg-slate-900/90 border border-sky-500/30 rounded-2xl p-4 text-left mb-5">
+                <div class="flex items-center space-x-2 text-sky-300 font-bold text-sm mb-1.5">
+                    <i class="fa-solid fa-lightbulb text-amber-400"></i>
+                    <span>Biliyor muydun?</span>
+                </div>
+                <p id="modal-fact" class="text-slate-200 text-sm leading-relaxed">
+                    Ay, Dünya'nın tek doğal uydusudur...
+                </p>
+            </div>
+
+            <div class="flex space-x-3">
+                <button onclick="closeVictoryModal()" class="code-btn flex-1 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold py-3 rounded-xl border border-slate-600 text-sm">
+                    Kodu İncele
+                </button>
+                <button id="next-level-btn" onclick="goToNextLevel()" class="code-btn flex-1 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-bold py-3 rounded-xl border border-amber-300 text-sm flex items-center justify-center space-x-2">
+                    <span>Sonraki Görev</span>
+                    <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /**************************************************************
+         * 1. SES SENTEZLEYİCİ (WEB AUDIO API)
+         **************************************************************/
+        class SoundEffects {
+            constructor() {
+                this.ctx = null;
+                this.enabled = true;
+            }
+
+            init() {
+                if (!this.ctx) {
+                    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                    if (AudioCtx) this.ctx = new AudioCtx();
+                }
+                if (this.ctx && this.ctx.state === 'suspended') {
+                    this.ctx.resume();
+                }
+            }
+
+            playTone(freq, type, duration, vol = 0.15, slideFreq = null) {
+                if (!this.enabled) return;
+                this.init();
+                if (!this.ctx) return;
+                try {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = type;
+                    osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+                    if (slideFreq) {
+                        osc.frequency.exponentialRampToValueAtTime(slideFreq, this.ctx.currentTime + duration);
+                    }
+                    gain.gain.setValueAtTime(vol, this.ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration);
+
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start();
+                    osc.stop(this.ctx.currentTime + duration);
+                } catch (e) {}
+            }
+
+            click() { this.playTone(520, 'sine', 0.08, 0.12, 680); }
+            delete() { this.playTone(350, 'triangle', 0.1, 0.12, 180); }
+            thrust() { this.playTone(140, 'sawtooth', 0.45, 0.08, 90); }
+            turn() { this.playTone(320, 'sine', 0.25, 0.1, 440); }
+            star() {
+                this.playTone(587.33, 'sine', 0.12, 0.15);
+                setTimeout(() => this.playTone(880, 'sine', 0.25, 0.18), 90);
+            }
+            scan() {
+                this.playTone(400, 'sine', 0.15, 0.12, 900);
+                setTimeout(() => this.playTone(900, 'sine', 0.2, 0.12, 500), 150);
+            }
+            crash() { this.playTone(150, 'sawtooth', 0.5, 0.2, 45); }
+            victory() {
+                const notes = [523.25, 659.25, 783.99, 1046.50];
+                notes.forEach((n, i) => {
+                    setTimeout(() => this.playTone(n, 'triangle', 0.28, 0.18), i * 110);
+                });
+            }
+        }
+
+        const sfx = new SoundEffects();
+
+        document.getElementById('sound-toggle').addEventListener('click', () => {
+            sfx.enabled = !sfx.enabled;
+            const icon = document.getElementById('sound-icon');
+            icon.className = sfx.enabled ? 'fa-solid fa-volume-high' : 'fa-solid fa-volume-xmark text-rose-400';
+            if (sfx.enabled) sfx.click();
+        });
+
+        /**************************************************************
+         * 2. 16 SEVİYE VERİSİ
+         **************************************************************/
+        const LEVELS = [
+            {
+                id: 1,
+                name: "Bölüm 1: Ay'a İlk Adım",
+                targetName: "Ay",
+                planetType: "moon",
+                icon: "fa-moon",
+                requireAllStars: false,
+                idealBlocks: 4,
+                description: "Uzay maceramız başlıyor! BİLFEN Roketi'ni 3 birim ileri götürerek Ay'a ulaştır ve 'Gezegeni Keşfet!' bloğunu çalıştır.",
+                gridSize: 5,
+                start: { x: 2, z: 4, dir: 0 },
+                target: { x: 2, z: 1 },
+                stars: [ { x: 2, z: 3 }, { x: 2, z: 2 } ],
+                obstacles: [],
+                fact: "Ay, Dünya'mızın tek doğal uydusudur. Ay'da rüzgar ve yağmur olmadığı için astronotların bıraktığı ayak izleri milyonlarca yıl bozulmadan kalabilir!"
+            },
+            {
+                id: 2,
+                name: "Bölüm 2: Güneş'e En Yakın Gezegen Merkür",
+                targetName: "Merkür",
+                planetType: "mercury",
+                icon: "fa-sun",
+                requireAllStars: false,
+                idealBlocks: 6,
+                description: "İleri git, sağa dönerek yıldızları topla ve Güneş'e en yakın gezegen olan Merkür'ü keşfet!",
+                gridSize: 5,
+                start: { x: 1, z: 4, dir: 0 },
+                target: { x: 3, z: 2 },
+                stars: [ { x: 1, z: 2 }, { x: 2, z: 2 } ],
+                obstacles: [ { x: 2, z: 4, type: 'asteroid' }, { x: 2, z: 3, type: 'asteroid' } ],
+                fact: "Merkür, Güneş Sistemi'ndeki en küçük ve Güneş'e en yakın gezegendir. Güneş etrafında o kadar hızlı döner ki Merkür'de 1 yıl sadece 88 Dünya günü sürer!"
+            },
+            {
+                id: 3,
+                name: "Bölüm 3: Parlak Çoban Yıldızı Venüs",
+                targetName: "Venüs",
+                planetType: "venus",
+                icon: "fa-cloud-sun",
+                requireAllStars: false,
+                idealBlocks: 7,
+                description: "Asteroitlere çarpmadan 'S' şeklinde bir rota çiz, enerji yıldızlarını topla ve sıcak Venüs'e ulaş!",
+                gridSize: 5,
+                start: { x: 1, z: 4, dir: 0 },
+                target: { x: 3, z: 1 },
+                stars: [ { x: 1, z: 3 }, { x: 3, z: 3 }, { x: 3, z: 2 } ],
+                obstacles: [ { x: 1, z: 2, type: 'asteroid' }, { x: 2, z: 4, type: 'asteroid' }, { x: 2, z: 2, type: 'asteroid' } ],
+                fact: "Venüs, kalın bulutları sera etkisi yarattığı için Güneş Sistemi'nin en sıcak gezegenidir (yaklaşık 465°C)! Ayrıca diğer gezegenlerin aksine ters yönde (doğudan batıya) döner."
+            },
+            {
+                id: 4,
+                name: "Bölüm 4: Kızıl Gezegen Mars ve Döngüler",
+                targetName: "Mars",
+                planetType: "mars",
+                icon: "fa-fire-flame-simple",
+                requireAllStars: false,
+                idealBlocks: 3,
+                description: "Uzun düz yolda 4 kez tek tek 'İleri Git' yazmak yerine turuncu 'Tekrarla (4 kez)' bloğunu kullan!",
+                gridSize: 6,
+                start: { x: 2, z: 5, dir: 0 },
+                target: { x: 2, z: 1 },
+                stars: [ { x: 2, z: 4 }, { x: 2, z: 3 }, { x: 2, z: 2 } ],
+                obstacles: [
+                    { x: 1, z: 3, type: 'asteroid' }, { x: 3, z: 3, type: 'asteroid' },
+                    { x: 1, z: 2, type: 'asteroid' }, { x: 3, z: 2, type: 'asteroid' }
+                ],
+                fact: "Mars'a 'Kızıl Gezegen' denir çünkü toprağında bol miktarda paslanmış demir bulunur. Güneş Sistemi'nin en yüksek dağı olan Olympus Mons (21 km) Mars'tadır!"
+            },
+            {
+                id: 5,
+                name: "Bölüm 5: Asteroit Kuşağı Araştırma Üssü",
+                targetName: "Araştırma Üssü",
+                planetType: "station",
+                icon: "fa-satellite",
+                requireAllStars: false,
+                idealBlocks: 7,
+                description: "Mars ile Jüpiter arasındaki yoğun Asteroit Kuşağı'ndan dikkatlice geçerek Araştırma Üssü'ne ulaş ve 'Üsse Kenetlen!' komutunu çalıştır!",
+                gridSize: 6,
+                start: { x: 0, z: 4, dir: 1 },
+                target: { x: 4, z: 1 },
+                stars: [ { x: 2, z: 4 }, { x: 4, z: 4 }, { x: 4, z: 2 } ],
+                obstacles: [
+                    { x: 1, z: 3, type: 'asteroid' }, { x: 2, z: 3, type: 'asteroid' },
+                    { x: 3, z: 3, type: 'asteroid' }, { x: 2, z: 2, type: 'asteroid' },
+                    { x: 3, z: 1, type: 'asteroid' }
+                ],
+                fact: "Mars ve Jüpiter arasında milyonlarca kaya ve metal parçasının döndüğü 'Asteroit Kuşağı' bulunur. Buradaki en büyük gök cismi 'Ceres' adında bir cüce gezegendir."
+            },
+            {
+                id: 6,
+                name: "Bölüm 6: Gaz Devi Jüpiter",
+                targetName: "Jüpiter",
+                planetType: "jupiter",
+                icon: "fa-hurricane",
+                requireAllStars: false,
+                idealBlocks: 6,
+                description: "İki ayrı 'Tekrarla' döngüsü ve bir dönüş kullanarak köşedeki yıldızları topla ve dev Jüpiter'e ulaş!",
+                gridSize: 6,
+                start: { x: 1, z: 5, dir: 0 },
+                target: { x: 5, z: 1 },
+                stars: [ { x: 1, z: 3 }, { x: 1, z: 1 }, { x: 3, z: 1 } ],
+                obstacles: [
+                    { x: 2, z: 4, type: 'asteroid' }, { x: 2, z: 3, type: 'asteroid' },
+                    { x: 2, z: 2, type: 'asteroid' }, { x: 3, z: 3, type: 'blackhole' }
+                ],
+                fact: "Jüpiter, Güneş Sistemi'ndeki en büyük gezegendir; içerisine 1.300'den fazla Dünya sığabilir! Üzerindeki 'Büyük Kırmızı Leke' yüzlerce yıldır süren dev bir fırtınadır."
+            },
+            {
+                id: 7,
+                name: "Bölüm 7: Halkaların Efendisi Satürn",
+                targetName: "Satürn",
+                planetType: "saturn",
+                icon: "fa-ring",
+                requireAllStars: false,
+                idealBlocks: 8,
+                description: "Kara deliklerin yanından geçerek halkalı gezegen Satürn'ün yörüngesine gir ve gezegeni tara!",
+                gridSize: 6,
+                start: { x: 0, z: 5, dir: 1 },
+                target: { x: 3, z: 0 },
+                stars: [ { x: 3, z: 5 }, { x: 3, z: 3 }, { x: 3, z: 1 } ],
+                obstacles: [
+                    { x: 1, z: 4, type: 'asteroid' }, { x: 2, z: 4, type: 'blackhole' },
+                    { x: 4, z: 3, type: 'asteroid' }, { x: 2, z: 2, type: 'asteroid' },
+                    { x: 4, z: 1, type: 'blackhole' }
+                ],
+                fact: "Satürn muhteşem halkalarıyla ünlüdür. Bu halkalar katı birer çember değil; gezegenin etrafında hızla dönen milyarlarca buz parçası ve kayadan oluşur!"
+            },
+            {
+                id: 8,
+                name: "Bölüm 8: Yan Yatan Buz Devi Uranüs",
+                targetName: "Uranüs",
+                planetType: "uranus",
+                icon: "fa-circle-dot",
+                requireAllStars: false,
+                idealBlocks: 6,
+                description: "Tekrarla bloğunun içine birden fazla komut (İleri, Sağa Dön, İleri, Sola Dön) koyarak basamakları çık!",
+                gridSize: 6,
+                start: { x: 1, z: 4, dir: 0 },
+                target: { x: 4, z: 1 },
+                stars: [ { x: 1, z: 3 }, { x: 2, z: 2 }, { x: 3, z: 1 } ],
+                obstacles: [
+                    { x: 0, z: 3, type: 'asteroid' }, { x: 1, z: 2, type: 'blackhole' },
+                    { x: 2, z: 1, type: 'blackhole' }, { x: 3, z: 3, type: 'asteroid' },
+                    { x: 4, z: 2, type: 'asteroid' }
+                ],
+                fact: "Uranüs çok ilginç bir buz devidir çünkü yörüngesinde neredeyse tamamen yan yatmış bir varil gibi yuvarlanarak döner! Halkaları da dikey durur."
+            },
+            {
+                id: 9,
+                name: "Bölüm 9: Rüzgarlı Mavi Gezegen Neptün",
+                targetName: "Neptün",
+                planetType: "neptune",
+                icon: "fa-wind",
+                requireAllStars: false,
+                idealBlocks: 9,
+                description: "U şeklindeki tehlikeli koridordan geçerek yıldızları topla ve mavi dev Neptün'e ulaş!",
+                gridSize: 6,
+                start: { x: 1, z: 1, dir: 2 },
+                target: { x: 4, z: 1 },
+                stars: [ { x: 1, z: 4 }, { x: 3, z: 4 }, { x: 4, z: 3 } ],
+                obstacles: [
+                    { x: 2, z: 1, type: 'blackhole' }, { x: 2, z: 2, type: 'asteroid' },
+                    { x: 2, z: 3, type: 'asteroid' }, { x: 3, z: 2, type: 'blackhole' },
+                    { x: 3, z: 1, type: 'asteroid' }
+                ],
+                fact: "Neptün, Güneş'e en uzak ana gezegendir. Atmosferindeki metan gazı ona koyu mavi rengini verir ve saatte 2.000 km hıza ulaşan fırtınalara sahiptir!"
+            },
+            {
+                id: 10,
+                name: "Bölüm 10: Cüce Gezegen Plüton (Kuiper Kuşağı)",
+                targetName: "Plüton",
+                planetType: "pluto",
+                icon: "fa-snowflake",
+                requireAllStars: false,
+                idealBlocks: 8,
+                description: "Güneş Sistemi'nin en uç noktasına ulaştık! Buzlu asteroitleri aşarak Plüton'u keşfet.",
+                gridSize: 6,
+                start: { x: 0, z: 5, dir: 0 },
+                target: { x: 5, z: 2 },
+                stars: [ { x: 0, z: 2 }, { x: 2, z: 2 }, { x: 4, z: 2 } ],
+                obstacles: [
+                    { x: 1, z: 4, type: 'asteroid' }, { x: 1, z: 3, type: 'blackhole' },
+                    { x: 2, z: 4, type: 'asteroid' }, { x: 3, z: 1, type: 'asteroid' },
+                    { x: 4, z: 3, type: 'blackhole' }
+                ],
+                fact: "Plüton, Kuiper Kuşağı'nda yer alan buzlu bir cüce gezegendir. Yüzeyinde kalp şeklinde devasa bir buz ovası (Tombaugh Bölgesi) bulunur!"
+            },
+            {
+                id: 11,
+                name: "Bölüm 11: Dönüş Yakıtı 1 - Kuiper Geçidi",
+                targetName: "Warp Geçidi 1",
+                planetType: "portal",
+                icon: "fa-compass-drafting",
+                requireAllStars: true,
+                idealBlocks: 6,
+                description: "DİKKAT: Dünya'ya geri dönebilmek için roketin Warp enerjisine ihtiyacı var! Sahnedeki TÜM YILDIZLARI (3/3) toplayıp 'Geçide Gir!' komutunu kullan!",
+                gridSize: 6,
+                start: { x: 1, z: 5, dir: 0 },
+                target: { x: 4, z: 2 },
+                stars: [ { x: 1, z: 3 }, { x: 1, z: 2 }, { x: 3, z: 2 } ],
+                obstacles: [
+                    { x: 2, z: 4, type: 'asteroid' }, { x: 2, z: 3, type: 'blackhole' },
+                    { x: 3, z: 4, type: 'asteroid' }
+                ],
+                fact: "Uzay araçları uzun mesafelerde yakıt tasarrufu yapmak için gezegenlerin kütleçekim kuvvetini sapan gibi kullanır. Buna 'Kütleçekim Sapanı' denir!"
+            },
+            {
+                id: 12,
+                name: "Bölüm 12: Dönüş Yakıtı 2 - Yıldız Kümesi",
+                targetName: "Warp Geçidi 2",
+                planetType: "portal",
+                icon: "fa-bolt",
+                requireAllStars: true,
+                idealBlocks: 8,
+                description: "Dönüş yolculuğu devam ediyor! 4 enerji yıldızının tamamını topla ve ikinci solucan deliği geçidini çalıştır!",
+                gridSize: 6,
+                start: { x: 0, z: 4, dir: 1 },
+                target: { x: 0, z: 1 },
+                stars: [ { x: 2, z: 4 }, { x: 4, z: 4 }, { x: 4, z: 1 }, { x: 2, z: 1 } ],
+                obstacles: [
+                    { x: 1, z: 2, type: 'asteroid' }, { x: 2, z: 2, type: 'blackhole' },
+                    { x: 3, z: 2, type: 'asteroid' }, { x: 2, z: 3, type: 'asteroid' }
+                ],
+                fact: "Yıldızlar aslında devasa sıcak gaz küreleridir. Bize en yakın yıldız Güneş'tir; Güneş'ten çıkan ışığın Dünya'ya ulaşması yaklaşık 8 dakika 20 saniye sürer!"
+            },
+            {
+                id: 13,
+                name: "Bölüm 13: Dönüş Yakıtı 3 - Kara Delik Labirenti",
+                targetName: "Warp Geçidi 3",
+                planetType: "portal",
+                icon: "fa-atom",
+                requireAllStars: true,
+                idealBlocks: 9,
+                description: "Kara deliklere yaklaşmadan zikzak çizerek 4 yıldızın hepsini topla ve geçide ulaş!",
+                gridSize: 6,
+                start: { x: 0, z: 5, dir: 0 },
+                target: { x: 5, z: 0 },
+                stars: [ { x: 0, z: 3 }, { x: 2, z: 3 }, { x: 2, z: 0 }, { x: 4, z: 0 } ],
+                obstacles: [
+                    { x: 0, z: 1, type: 'blackhole' }, { x: 1, z: 5, type: 'asteroid' },
+                    { x: 1, z: 1, type: 'asteroid' }, { x: 3, z: 3, type: 'blackhole' },
+                    { x: 3, z: 2, type: 'asteroid' }, { x: 4, z: 2, type: 'blackhole' }
+                ],
+                fact: "Kara delikler o kadar güçlü bir çekim kuvvetine sahiptir ki, ışık bile onlardan kaçamaz! Dev yıldızların ömrü bittiğinde çökmeleriyle oluşurlar."
+            },
+            {
+                id: 14,
+                name: "Bölüm 14: Dönüş Yakıtı 4 - Orion Bulutsusu",
+                targetName: "Warp Geçidi 4",
+                planetType: "portal",
+                icon: "fa-wand-magic-sparkles",
+                requireAllStars: true,
+                idealBlocks: 9,
+                description: "Yıldız doğum bölgesi olan Bulutsu'daki 4 parlak yıldızı da topla. Döngüleri kullanarak kodunu kısaltabilirsin!",
+                gridSize: 6,
+                start: { x: 5, z: 5, dir: 3 },
+                target: { x: 5, z: 1 },
+                stars: [ { x: 3, z: 5 }, { x: 1, z: 5 }, { x: 1, z: 1 }, { x: 3, z: 1 } ],
+                obstacles: [
+                    { x: 3, z: 3, type: 'blackhole' }, { x: 2, z: 3, type: 'asteroid' },
+                    { x: 4, z: 3, type: 'asteroid' }, { x: 5, z: 3, type: 'blackhole' }
+                ],
+                fact: "Bulutsu (Nebula), uzaydaki devasa toz ve gaz bulutlarıdır. Yeni yıldızlar burada doğduğu için onlara 'Yıldız Kreşleri' de denir!"
+            },
+            {
+                id: 15,
+                name: "Bölüm 15: Dönüş Yakıtı 5 - Son Sıçrama Kapısı",
+                targetName: "Son Warp Geçidi",
+                planetType: "portal",
+                icon: "fa-circle-nodes",
+                requireAllStars: true,
+                idealBlocks: 10,
+                description: "Dünya yörüngesine sıçramak için son 5 yıldız enerjisini eksiksiz topla ve ana geçitten geç!",
+                gridSize: 6,
+                start: { x: 0, z: 0, dir: 1 },
+                target: { x: 2, z: 3 },
+                stars: [
+                    { x: 2, z: 0 }, { x: 5, z: 0 }, { x: 5, z: 3 },
+                    { x: 5, z: 5 }, { x: 2, z: 5 }
+                ],
+                obstacles: [
+                    { x: 1, z: 2, type: 'asteroid' }, { x: 3, z: 2, type: 'blackhole' },
+                    { x: 4, z: 2, type: 'asteroid' }, { x: 3, z: 4, type: 'asteroid' },
+                    { x: 1, z: 4, type: 'blackhole' }
+                ],
+                fact: "İçinde yaşadığımız galaksinin adı Samanyolu Galaksisi'dir. Samanyolu'nda 200 milyardan fazla yıldız ve gezegen sistemi bulunur!"
+            },
+            {
+                id: 16,
+                name: "Bölüm 16: Büyük Final - Evimiz Dünya'ya İniş!",
+                targetName: "Dünya",
+                planetType: "earth",
+                icon: "fa-earth-americas",
+                requireAllStars: true,
+                idealBlocks: 10,
+                description: "BÜYÜK FİNAL: Son 4 yörünge yıldızının tamamını topla, engelleri aş ve mavi gezegenimiz DÜNYA'ya güvenle iniş yap!",
+                gridSize: 6,
+                start: { x: 0, z: 5, dir: 0 },
+                target: { x: 3, z: 2 },
+                stars: [ { x: 0, z: 2 }, { x: 0, z: 0 }, { x: 5, z: 0 }, { x: 5, z: 2 } ],
+                obstacles: [
+                    { x: 1, z: 4, type: 'asteroid' }, { x: 2, z: 4, type: 'blackhole' },
+                    { x: 2, z: 1, type: 'asteroid' }, { x: 3, z: 1, type: 'asteroid' },
+                    { x: 4, z: 3, type: 'blackhole' }
+                ],
+                fact: "TEBRİKLER USTA KAŞİF! Evimiz Dünya, Güneş Sistemi'nde yüzeyinde sıvı su ve canlı yaşamı barındırdığı bilinen tek gezegendir. Yüzeyinin %71'i okyanuslarla kaplı olduğu için uzaydan 'Mavi Bilye' gibi görünür!"
+            }
+        ];
+
+        /**************************************************************
+         * 3. OYUN DURUMU, BÖLÜM KOD HAFIZASI VE HARİTA YILDIZ KARNESİ
+         **************************************************************/
+        const STORAGE_KEY = 'bilfen_uzay_kasifi_save_v6';
+        let currentLevelIndex = 0;
+        let completedLevels = new Set();
+        let levelStarsEarned = {};
+        let savedLevelWorkspaces = {};
+
+        let programBlocks = [];
+        let selectedLoopId = null;
+        let isRunning = false;
+        let stopRequested = false;
+
+        let rocketState = {
+            x: 0,
+            z: 0,
+            dir: 0,
+            collectedStars: 0
+        };
+
+        let blockIdCounter = 1;
+
+        function loadProgressFromStorage() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                if (!raw) return;
+                const data = JSON.parse(raw);
+                if (Array.isArray(data.completed)) completedLevels = new Set(data.completed);
+                if (data.stars && typeof data.stars === 'object') levelStarsEarned = data.stars;
+                if (data.workspaces && typeof data.workspaces === 'object') savedLevelWorkspaces = data.workspaces;
+                if (typeof data.blockIdCounter === 'number') blockIdCounter = data.blockIdCounter;
+            } catch (e) {}
+        }
+
+        function saveProgressToStorage() {
+            try {
+                const lvl = LEVELS[currentLevelIndex];
+                if (lvl) {
+                    savedLevelWorkspaces[lvl.id] = JSON.parse(JSON.stringify(programBlocks));
+                }
+                localStorage.setItem(STORAGE_KEY, JSON.stringify({
+                    completed: Array.from(completedLevels),
+                    stars: levelStarsEarned,
+                    workspaces: savedLevelWorkspaces,
+                    blockIdCounter: blockIdCounter
+                }));
+            } catch (e) {}
+            updateTotalStarsUI();
+        }
+
+        function updateTotalStarsUI() {
+            const totalMax = LEVELS.length * 3;
+            let earnedSum = 0;
+            Object.values(levelStarsEarned).forEach(v => { earnedSum += (Number(v) || 0); });
+
+            const headerEl = document.getElementById('total-stars-header');
+            if (headerEl) headerEl.textContent = `${earnedSum} / ${totalMax} ⭐`;
+
+            const mapTotalEl = document.getElementById('map-total-stars');
+            if (mapTotalEl) mapTotalEl.textContent = `Toplam: ${earnedSum} / ${totalMax} ⭐`;
+
+            const lvl = LEVELS[currentLevelIndex];
+            const savedBadge = document.getElementById('level-saved-stars-badge');
+            if (lvl && savedBadge) {
+                const sCount = levelStarsEarned[lvl.id] || 0;
+                if (sCount > 0) {
+                    savedBadge.classList.remove('hidden');
+                    savedBadge.textContent = '⭐'.repeat(sCount) + '☆'.repeat(3 - sCount);
+                } else {
+                    savedBadge.classList.add('hidden');
+                }
+            }
+        }
+
+        function resetAllGameProgress() {
+            if (isRunning) stopRequested = true;
+            sfx.delete();
+            completedLevels.clear();
+            levelStarsEarned = {};
+            savedLevelWorkspaces = {};
+            programBlocks = [];
+            selectedLoopId = null;
+            try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
+            loadLevel(0);
+            renderLevelMapCards();
+            updateTotalStarsUI();
+            showStatusToast("Tüm bölümler, yıldızlar ve kodlar sıfırlandı!", "fa-rotate text-amber-400", "border-amber-400");
+            setTimeout(hideStatusToast, 2500);
+        }
+
+        function countTotalBlocksInList(blocks) {
+            let total = 0;
+            if (!Array.isArray(blocks)) return 0;
+            blocks.forEach(b => {
+                total++;
+                if (b.children) total += b.children.length;
+            });
+            return total;
+        }
+
+        function getCommandMeta(type) {
+            switch (type) {
+                case 'FORWARD':
+                    return { label: 'İleri Git', icon: 'fa-arrow-up', color: 'bg-blue-600 border-blue-400' };
+                case 'LEFT':
+                    return { label: 'Sola Dön', icon: 'fa-rotate-left', color: 'bg-purple-600 border-purple-400' };
+                case 'RIGHT':
+                    return { label: 'Sağa Dön', icon: 'fa-rotate-right', color: 'bg-indigo-600 border-indigo-400' };
+                case 'SCAN': {
+                    const lvl = LEVELS[currentLevelIndex];
+                    if (lvl && lvl.planetType === 'station') {
+                        return { label: 'Üsse Kenetlen!', icon: 'fa-link', color: 'bg-emerald-600 border-emerald-400' };
+                    } else if (lvl && lvl.planetType === 'portal') {
+                        return { label: 'Geçide Gir!', icon: 'fa-circle-nodes', color: 'bg-emerald-600 border-emerald-400' };
+                    } else if (lvl && lvl.planetType === 'earth') {
+                        return { label: "Dünya'ya İniş Yap!", icon: 'fa-earth-americas', color: 'bg-emerald-600 border-emerald-400' };
+                    }
+                    return { label: 'Gezegeni Keşfet!', icon: 'fa-satellite-dish', color: 'bg-emerald-600 border-emerald-400' };
+                }
+                case 'LOOP':
+                    return { label: 'Tekrarla', icon: 'fa-repeat', color: 'bg-amber-600 border-amber-400' };
+            }
+        }
+
+        function addCommand(type) {
+            if (isRunning) return;
+            sfx.click();
+
+            const newBlock = {
+                id: 'blk_' + (blockIdCounter++),
+                type: type,
+                count: type === 'LOOP' ? 3 : 1,
+                children: []
+            };
+
+            if (selectedLoopId && type !== 'LOOP' && type !== 'SCAN') {
+                const loopBlock = programBlocks.find(b => b.id === selectedLoopId);
+                if (loopBlock) {
+                    loopBlock.children.push(newBlock);
+                    saveProgressToStorage();
+                    renderWorkspace();
+                    return;
+                }
+            }
+
+            programBlocks.push(newBlock);
+            if (type === 'LOOP') {
+                selectedLoopId = newBlock.id;
+            } else if (type === 'SCAN') {
+                selectedLoopId = null;
+            }
+            saveProgressToStorage();
+            renderWorkspace();
+        }
+
+        function selectLoopTarget(loopId, event) {
+            if (event) event.stopPropagation();
+            if (isRunning) return;
+            sfx.click();
+            selectedLoopId = (selectedLoopId === loopId) ? null : loopId;
+            renderWorkspace();
+        }
+
+        function changeLoopCount(loopId, delta, event) {
+            if (event) event.stopPropagation();
+            if (isRunning) return;
+            sfx.click();
+            const block = programBlocks.find(b => b.id === loopId);
+            if (block) {
+                block.count = Math.max(2, Math.min(6, block.count + delta));
+                saveProgressToStorage();
+                renderWorkspace();
+            }
+        }
+
+        function removeBlock(blockId, parentLoopId = null, event = null) {
+            if (event) event.stopPropagation();
+            if (isRunning) return;
+            sfx.delete();
+
+            if (parentLoopId) {
+                const loop = programBlocks.find(b => b.id === parentLoopId);
+                if (loop) {
+                    loop.children = loop.children.filter(c => c.id !== blockId);
+                }
+            } else {
+                programBlocks = programBlocks.filter(b => b.id !== blockId);
+                if (selectedLoopId === blockId) selectedLoopId = null;
+            }
+            saveProgressToStorage();
+            renderWorkspace();
+        }
+
+        function clearWorkspace() {
+            if (isRunning) return;
+            sfx.delete();
+            programBlocks = [];
+            selectedLoopId = null;
+            saveProgressToStorage();
+            renderWorkspace();
+        }
+
+        function renderWorkspace() {
+            const container = document.getElementById('workspace-list');
+            const indicator = document.getElementById('active-target-indicator');
+            
+            const totalBlocks = countTotalBlocksInList(programBlocks);
+            document.getElementById('block-count-badge').textContent = `${totalBlocks} Blok`;
+
+            if (selectedLoopId) {
+                indicator.innerHTML = `<span class="text-amber-400 font-bold"><i class="fa-solid fa-arrow-turn-down"></i> Döngü İçi Seçili</span>`;
+            } else {
+                indicator.textContent = "Ana Kuyruk";
+            }
+
+            if (programBlocks.length === 0) {
+                container.innerHTML = `
+                    <div class="h-44 border-2 border-dashed border-slate-700 rounded-2xl flex flex-col items-center justify-center text-slate-400 p-4 text-center">
+                        <i class="fa-solid fa-rocket text-3xl text-slate-600 mb-2"></i>
+                        <p class="text-xs sm:text-sm font-medium">Henüz komut eklenmedi.</p>
+                        <p class="text-xs text-slate-500 mt-1">Yukarıdaki renkli bloklara tıklayarak roketin rotasını oluştur!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            programBlocks.forEach((block, index) => {
+                const meta = getCommandMeta(block.type);
+
+                if (block.type === 'LOOP') {
+                    const isSelected = selectedLoopId === block.id;
+                    html += `
+                        <div id="${block.id}" onclick="selectLoopTarget('${block.id}', event)" 
+                             class="rounded-2xl border-2 transition-all cursor-pointer p-2.5 ${isSelected ? 'bg-amber-500/20 border-amber-400 shadow-lg shadow-amber-500/10' : 'bg-slate-900/90 border-amber-500/50 hover:border-amber-400'}">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center space-x-2">
+                                    <span class="w-6 h-6 rounded-lg bg-amber-500 text-slate-950 font-bold text-xs flex items-center justify-center">${index + 1}</span>
+                                    <i class="fa-solid ${meta.icon} text-amber-400"></i>
+                                    <span class="font-bold text-sm text-amber-200">Tekrarla</span>
+                                    
+                                    <div class="flex items-center space-x-1 bg-slate-950 px-2 py-0.5 rounded-lg border border-amber-500/40">
+                                        <button onclick="changeLoopCount('${block.id}', -1, event)" class="text-amber-400 hover:text-white px-1 font-bold">-</button>
+                                        <span class="text-xs font-bold text-white">${block.count} kez</span>
+                                        <button onclick="changeLoopCount('${block.id}', 1, event)" class="text-amber-400 hover:text-white px-1 font-bold">+</button>
+                                    </div>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <span class="text-[11px] px-2 py-0.5 rounded-md ${isSelected ? 'bg-amber-400 text-slate-950 font-bold' : 'bg-slate-800 text-slate-400'}">
+                                        ${isSelected ? 'İçine Ekleniyor' : 'Seç'}
+                                    </span>
+                                    <button onclick="removeBlock('${block.id}', null, event)" class="w-7 h-7 rounded-lg hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 flex items-center justify-center transition">
+                                        <i class="fa-solid fa-xmark"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="mt-2 pl-4 border-l-2 border-amber-400/50 space-y-1.5">
+                                ${block.children.length === 0 ? `
+                                    <div class="text-xs text-amber-200/60 italic py-1.5 px-2 bg-slate-950/50 rounded-xl">
+                                        Bu döngüye komut eklemek için yukarıdan İleri / Dön bloklarına tıkla.
+                                    </div>
+                                ` : block.children.map((child) => {
+                                    const cMeta = getCommandMeta(child.type);
+                                    return `
+                                        <div id="${child.id}" class="${cMeta.color} border rounded-xl px-3 py-1.5 flex items-center justify-between text-white shadow">
+                                            <div class="flex items-center space-x-2">
+                                                <i class="fa-solid ${cMeta.icon} text-xs"></i>
+                                                <span class="font-semibold text-xs sm:text-sm">${cMeta.label}</span>
+                                            </div>
+                                            <button onclick="removeBlock('${child.id}', '${block.id}', event)" class="w-6 h-6 rounded-lg hover:bg-black/20 flex items-center justify-center text-white/80 hover:text-white">
+                                                <i class="fa-solid fa-xmark text-xs"></i>
+                                            </button>
+                                        </div>
+                                    `;
+                                }).join('')}
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    html += `
+                        <div id="${block.id}" onclick="selectLoopTarget(null, event)" class="${meta.color} border rounded-xl px-3.5 py-2.5 flex items-center justify-between text-white shadow-md transition-all">
+                            <div class="flex items-center space-x-3">
+                                <span class="w-6 h-6 rounded-lg bg-black/25 font-bold text-xs flex items-center justify-center">${index + 1}</span>
+                                <i class="fa-solid ${meta.icon}"></i>
+                                <span class="font-bold text-sm">${meta.label}</span>
+                            </div>
+                            <button onclick="removeBlock('${block.id}', null, event)" class="w-7 h-7 rounded-lg hover:bg-black/20 flex items-center justify-center text-white/80 hover:text-white transition">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+                        </div>
+                    `;
+                }
+            });
+
+            container.innerHTML = html;
+            container.scrollTop = container.scrollHeight;
+        }
+
+        /**************************************************************
+         * 4. THREE.JS 3B UZAY SAHNESİ KURULUMU
+         **************************************************************/
+        const container = document.getElementById('canvas-container');
+        let scene, camera, renderer, worldGroup, gridGroup, objectsGroup, clock;
+        let rocketMesh = null;
+        let targetPlanetMesh = null;
+        let starMeshes = [];
+        let obstacleMeshes = [];
+        let flameParticles = [];
+        let thrusterActive = false;
+
+        const TILE_SIZE = 2.4;
+
+        function getSafeContainerSize() {
+            const w = container.clientWidth || window.innerWidth - 440 || 800;
+            const h = container.clientHeight || window.innerHeight - 64 || 600;
+            return { w: Math.max(300, w), h: Math.max(300, h) };
+        }
+
+        function initThreeScene() {
+            const size = getSafeContainerSize();
+            scene = new THREE.Scene();
+            scene.fog = new THREE.FogExp2(0x060913, 0.022);
+
+            camera = new THREE.PerspectiveCamera(50, size.w / size.h, 0.1, 1000);
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+            renderer.setSize(size.w, size.h);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+            renderer.shadowMap.enabled = true;
+
+            container.innerHTML = '';
+            container.appendChild(renderer.domElement);
+
+            const ambientLight = new THREE.AmbientLight(0xdbeafe, 0.8);
+            scene.add(ambientLight);
+
+            const sunLight = new THREE.DirectionalLight(0xfffbeb, 1.35);
+            sunLight.position.set(15, 25, 15);
+            sunLight.castShadow = true;
+            scene.add(sunLight);
+
+            const pointLight = new THREE.PointLight(0x38bdf8, 0.85, 35);
+            pointLight.position.set(0, 8, 0);
+            scene.add(pointLight);
+
+            worldGroup = new THREE.Group();
+            scene.add(worldGroup);
+
+            gridGroup = new THREE.Group();
+            objectsGroup = new THREE.Group();
+            worldGroup.add(gridGroup);
+            worldGroup.add(objectsGroup);
+
+            clock = new THREE.Clock();
+            createStarfield();
+
+            if (window.ResizeObserver) {
+                const ro = new ResizeObserver(() => {
+                    handleResize();
+                });
+                ro.observe(container);
+            }
+        }
+
+        function handleResize() {
+            if (!renderer || !camera) return;
+            const size = getSafeContainerSize();
+            camera.aspect = size.w / size.h;
+            camera.updateProjectionMatrix();
+            renderer.setSize(size.w, size.h);
+        }
+
+        function createStarfield() {
+            const starGeo = new THREE.BufferGeometry();
+            const count = 1200;
+            const positions = new Float32Array(count * 3);
+            const colors = new Float32Array(count * 3);
+
+            for (let i = 0; i < count; i++) {
+                positions[i * 3] = (Math.random() - 0.5) * 160;
+                positions[i * 3 + 1] = (Math.random() - 0.5) * 120;
+                positions[i * 3 + 2] = (Math.random() - 0.5) * 160;
+
+                const tint = Math.random();
+                if (tint < 0.3) {
+                    colors[i * 3] = 0.6; colors[i * 3 + 1] = 0.8; colors[i * 3 + 2] = 1.0;
+                } else if (tint < 0.6) {
+                    colors[i * 3] = 1.0; colors[i * 3 + 1] = 0.9; colors[i * 3 + 2] = 0.7;
+                } else {
+                    colors[i * 3] = 1.0; colors[i * 3 + 1] = 1.0; colors[i * 3 + 2] = 1.0;
+                }
+            }
+
+            starGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            starGeo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+            const starMat = new THREE.PointsMaterial({
+                size: 0.35,
+                vertexColors: true,
+                transparent: true,
+                opacity: 0.9
+            });
+
+            const stars = new THREE.Points(starGeo, starMat);
+            scene.add(stars);
+        }
+
+        function createBilfenRocketTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 512;
+            canvas.height = 256;
+            const ctx = canvas.getContext('2d');
+
+            ctx.fillStyle = '#f8fafc';
+            ctx.fillRect(0, 0, 512, 256);
+
+            ctx.fillStyle = '#083872';
+            ctx.fillRect(0, 0, 512, 22);
+            ctx.fillRect(0, 234, 512, 22);
+
+            const drawBilfenLogoOnHull = (centerX, centerY) => {
+                ctx.save();
+                ctx.translate(centerX, centerY);
+
+                const grad = ctx.createRadialGradient(-18, -22, 2, -24, -28, 20);
+                grad.addColorStop(0, '#ffffff');
+                grad.addColorStop(0.4, '#4c82c2');
+                grad.addColorStop(1, '#06234b');
+                ctx.fillStyle = grad;
+                ctx.beginPath();
+                ctx.arc(-24, -26, 16, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.save();
+                ctx.translate(-24, -26);
+                ctx.rotate(-0.38);
+                ctx.strokeStyle = '#083872';
+                ctx.lineWidth = 4;
+                ctx.beginPath();
+                ctx.ellipse(0, 0, 32, 7, 0, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.restore();
+
+                ctx.fillStyle = '#083872';
+                ctx.font = 'bold 34px Georgia, serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('BILFEN', 0, 22);
+
+                ctx.restore();
+            };
+
+            drawBilfenLogoOnHull(128, 135);
+            drawBilfenLogoOnHull(384, 135);
+
+            const texture = new THREE.CanvasTexture(canvas);
+            texture.needsUpdate = true;
+            return texture;
+        }
+
+        function createRocketModel() {
+            const group = new THREE.Group();
+
+            const bodyGeo = new THREE.CylinderGeometry(0.42, 0.52, 1.3, 24);
+            const bodyMat = new THREE.MeshStandardMaterial({
+                map: createBilfenRocketTexture(),
+                roughness: 0.25,
+                metalness: 0.15
+            });
+            const body = new THREE.Mesh(bodyGeo, bodyMat);
+            body.position.y = 0.85;
+            group.add(body);
+
+            const noseGeo = new THREE.ConeGeometry(0.42, 0.65, 20);
+            const redMat = new THREE.MeshStandardMaterial({ color: 0xef4444, roughness: 0.3, metalness: 0.2 });
+            const nose = new THREE.Mesh(noseGeo, redMat);
+            nose.position.y = 1.82;
+            group.add(nose);
+
+            const winRingGeo = new THREE.CylinderGeometry(0.24, 0.24, 0.1, 16);
+            const winRingMat = new THREE.MeshStandardMaterial({ color: 0xf59e0b, metalness: 0.6, roughness: 0.2 });
+            const winRing = new THREE.Mesh(winRingGeo, winRingMat);
+            winRing.rotation.x = Math.PI / 2;
+            winRing.position.set(0, 1.05, -0.4);
+            group.add(winRing);
+
+            const glassGeo = new THREE.SphereGeometry(0.19, 16, 16);
+            const glassMat = new THREE.MeshStandardMaterial({ color: 0x38bdf8, emissive: 0x0284c7, emissiveIntensity: 0.5, roughness: 0.1 });
+            const glass = new THREE.Mesh(glassGeo, glassMat);
+            glass.position.set(0, 1.05, -0.42);
+            group.add(glass);
+
+            const finGeo = new THREE.BoxGeometry(0.12, 0.55, 0.45);
+            for (let i = 0; i < 4; i++) {
+                const finPivot = new THREE.Group();
+                finPivot.rotation.y = (i * Math.PI) / 2;
+                const fin = new THREE.Mesh(finGeo, redMat);
+                fin.position.set(0, 0.45, 0.5);
+                finPivot.add(fin);
+                group.add(finPivot);
+            }
+
+            const nozzleGeo = new THREE.CylinderGeometry(0.3, 0.38, 0.25, 16);
+            const nozzleMat = new THREE.MeshStandardMaterial({ color: 0x334155, metalness: 0.7 });
+            const nozzle = new THREE.Mesh(nozzleGeo, nozzleMat);
+            nozzle.position.y = 0.15;
+            group.add(nozzle);
+
+            const arrowGroup = new THREE.Group();
+            const arrowCone = new THREE.Mesh(
+                new THREE.ConeGeometry(0.22, 0.35, 12),
+                new THREE.MeshBasicMaterial({ color: 0xfacc15 })
+            );
+            arrowCone.rotation.x = -Math.PI / 2;
+            arrowCone.position.set(0, 0.12, -0.85);
+            arrowGroup.add(arrowCone);
+            group.add(arrowGroup);
+
+            return group;
+        }
+
+        function createPlanetTexture(type) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 512;
+            canvas.height = 256;
+            const ctx = canvas.getContext('2d');
+
+            if (type === 'moon' || type === 'mercury') {
+                ctx.fillStyle = type === 'moon' ? '#cbd5e1' : '#9ca3af';
+                ctx.fillRect(0, 0, 512, 256);
+                for (let i = 0; i < 45; i++) {
+                    ctx.fillStyle = i % 2 === 0 ? '#64748b' : '#e2e8f0';
+                    ctx.beginPath();
+                    ctx.arc(Math.random() * 512, Math.random() * 256, 4 + Math.random() * 18, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            } else if (type === 'venus') {
+                const grad = ctx.createLinearGradient(0, 0, 0, 256);
+                grad.addColorStop(0, '#d97706');
+                grad.addColorStop(0.5, '#fbbf24');
+                grad.addColorStop(1, '#b45309');
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, 512, 256);
+                ctx.fillStyle = 'rgba(254, 243, 199, 0.35)';
+                for (let y = 10; y < 250; y += 25) {
+                    ctx.fillRect(0, y, 512, 10);
+                }
+            } else if (type === 'mars') {
+                ctx.fillStyle = '#dc2626';
+                ctx.fillRect(0, 0, 512, 256);
+                ctx.fillStyle = '#991b1b';
+                for (let i = 0; i < 25; i++) {
+                    ctx.beginPath();
+                    ctx.arc(Math.random() * 512, Math.random() * 256, 12 + Math.random() * 25, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                ctx.fillStyle = '#f8fafc';
+                ctx.fillRect(0, 0, 512, 18);
+            } else if (type === 'jupiter') {
+                const bands = ['#b45309', '#fde68a', '#d97706', '#fef3c7', '#92400e', '#f59e0b', '#78350f'];
+                const bh = 256 / bands.length;
+                bands.forEach((c, idx) => {
+                    ctx.fillStyle = c;
+                    ctx.fillRect(0, idx * bh, 512, bh + 2);
+                });
+                ctx.fillStyle = '#dc2626';
+                ctx.beginPath();
+                ctx.ellipse(260, 155, 38, 22, 0, 0, Math.PI * 2);
+                ctx.fill();
+            } else if (type === 'saturn') {
+                const bands = ['#eab308', '#fef08a', '#ca8a04', '#fde047', '#a16207'];
+                const bh = 256 / bands.length;
+                bands.forEach((c, idx) => {
+                    ctx.fillStyle = c;
+                    ctx.fillRect(0, idx * bh, 512, bh + 2);
+                });
+            } else if (type === 'uranus') {
+                const grad = ctx.createLinearGradient(0, 0, 0, 256);
+                grad.addColorStop(0, '#06b6d4');
+                grad.addColorStop(0.5, '#67e8f9');
+                grad.addColorStop(1, '#0891b2');
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, 512, 256);
+            } else if (type === 'neptune') {
+                const grad = ctx.createLinearGradient(0, 0, 0, 256);
+                grad.addColorStop(0, '#1e3a8a');
+                grad.addColorStop(0.5, '#2563eb');
+                grad.addColorStop(1, '#1d4ed8');
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, 512, 256);
+                ctx.fillStyle = 'rgba(147, 197, 253, 0.35)';
+                ctx.fillRect(0, 80, 512, 12);
+                ctx.fillRect(0, 160, 512, 10);
+            } else if (type === 'pluto') {
+                ctx.fillStyle = '#a8a29e';
+                ctx.fillRect(0, 0, 512, 256);
+                ctx.fillStyle = '#f5f5f4';
+                ctx.beginPath();
+                ctx.arc(240, 120, 40, 0, Math.PI * 2);
+                ctx.arc(285, 120, 40, 0, Math.PI * 2);
+                ctx.fill();
+            } else if (type === 'earth') {
+                ctx.fillStyle = '#0284c7';
+                ctx.fillRect(0, 0, 512, 256);
+                ctx.fillStyle = '#16a34a';
+                const continents = [
+                    [110, 80, 55, 40], [150, 150, 40, 50], [270, 75, 70, 45],
+                    [290, 140, 45, 50], [390, 90, 60, 40], [420, 175, 40, 30]
+                ];
+                continents.forEach(c => {
+                    ctx.beginPath();
+                    ctx.ellipse(c[0], c[1], c[2], c[3], 0.3, 0, Math.PI * 2);
+                    ctx.fill();
+                });
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, 512, 16);
+                ctx.fillRect(0, 240, 512, 16);
+                ctx.fillStyle = 'rgba(255,255,255,0.4)';
+                for (let i = 0; i < 12; i++) {
+                    ctx.fillRect(Math.random() * 450, Math.random() * 220, 60, 8);
+                }
+            }
+
+            return new THREE.CanvasTexture(canvas);
+        }
+
+        function createPlanetModel(type) {
+            const group = new THREE.Group();
+
+            if (type === 'portal') {
+                const outerRing = new THREE.Mesh(
+                    new THREE.TorusGeometry(0.95, 0.12, 16, 48),
+                    new THREE.MeshStandardMaterial({ color: 0x38bdf8, emissive: 0x0284c7, emissiveIntensity: 0.8, metalness: 0.7 })
+                );
+                group.add(outerRing);
+
+                const innerVortex = new THREE.Mesh(
+                    new THREE.CircleGeometry(0.85, 32),
+                    new THREE.MeshBasicMaterial({ color: 0xa855f7, side: THREE.DoubleSide, transparent: true, opacity: 0.75 })
+                );
+                group.add(innerVortex);
+
+                const coreVortex = new THREE.Mesh(
+                    new THREE.CircleGeometry(0.45, 32),
+                    new THREE.MeshBasicMaterial({ color: 0xe0f2fe, side: THREE.DoubleSide })
+                );
+                coreVortex.position.z = 0.02;
+                group.add(coreVortex);
+
+                group.position.y = 1.35;
+                return group;
+            }
+
+            if (type === 'station') {
+                const core = new THREE.Mesh(
+                    new THREE.CylinderGeometry(0.35, 0.35, 1.2, 16),
+                    new THREE.MeshStandardMaterial({ color: 0xe2e8f0, metalness: 0.6, roughness: 0.3 })
+                );
+                core.rotation.z = Math.PI / 4;
+                group.add(core);
+
+                const panelGeo = new THREE.BoxGeometry(2.2, 0.06, 0.55);
+                const panelMat = new THREE.MeshStandardMaterial({ color: 0x1d4ed8, emissive: 0x1e3a8a, emissiveIntensity: 0.5 });
+                const panel = new THREE.Mesh(panelGeo, panelMat);
+                group.add(panel);
+
+                group.position.y = 1.35;
+                return group;
+            }
+
+            let size = 0.85;
+            if (type === 'moon' || type === 'pluto') size = 0.68;
+            else if (type === 'mercury') size = 0.72;
+            else if (type === 'jupiter') size = 1.08;
+            else if (type === 'saturn') size = 0.96;
+            else if (type === 'earth') size = 0.95;
+
+            const tex = createPlanetTexture(type);
+            const sphereGeo = new THREE.SphereGeometry(size, 32, 32);
+            const sphereMat = new THREE.MeshStandardMaterial({
+                map: tex,
+                roughness: 0.55,
+                metalness: 0.1
+            });
+            const planet = new THREE.Mesh(sphereGeo, sphereMat);
+            group.add(planet);
+
+            if (type === 'saturn') {
+                const ringGeo = new THREE.RingGeometry(size * 1.25, size * 1.9, 48);
+                const ringMat = new THREE.MeshStandardMaterial({
+                    color: 0xfef08a,
+                    side: THREE.DoubleSide,
+                    transparent: true,
+                    opacity: 0.85
+                });
+                const ring = new THREE.Mesh(ringGeo, ringMat);
+                ring.rotation.x = Math.PI / 2.3;
+                ring.rotation.y = 0.2;
+                group.add(ring);
+            }
+
+            if (type === 'uranus') {
+                const ringGeo = new THREE.RingGeometry(size * 1.25, size * 1.6, 48);
+                const ringMat = new THREE.MeshBasicMaterial({
+                    color: 0xa5f3fc,
+                    side: THREE.DoubleSide,
+                    transparent: true,
+                    opacity: 0.7
+                });
+                const ring = new THREE.Mesh(ringGeo, ringMat);
+                ring.rotation.y = Math.PI / 6;
+                group.add(ring);
+            }
+
+            if (type === 'earth') {
+                const atmoGeo = new THREE.SphereGeometry(size * 1.12, 24, 24);
+                const atmoMat = new THREE.MeshBasicMaterial({
+                    color: 0x38bdf8,
+                    transparent: true,
+                    opacity: 0.22
+                });
+                group.add(new THREE.Mesh(atmoGeo, atmoMat));
+
+                const miniMoon = new THREE.Mesh(
+                    new THREE.SphereGeometry(0.2, 16, 16),
+                    new THREE.MeshStandardMaterial({ color: 0xe2e8f0 })
+                );
+                miniMoon.position.set(1.35, 0.4, 0);
+                group.add(miniMoon);
+            }
+
+            const markerGeo = new THREE.RingGeometry(0.85, 1.02, 32);
+            const markerMat = new THREE.MeshBasicMaterial({
+                color: 0x34d399,
+                side: THREE.DoubleSide,
+                transparent: true,
+                opacity: 0.85
+            });
+            const marker = new THREE.Mesh(markerGeo, markerMat);
+            marker.rotation.x = Math.PI / 2;
+            marker.position.y = -1.25;
+            group.add(marker);
+
+            group.position.y = 1.35;
+            return group;
+        }
+
+        function createStarModel() {
+            const group = new THREE.Group();
+            const geo = new THREE.OctahedronGeometry(0.45, 0);
+            const mat = new THREE.MeshStandardMaterial({
+                color: 0xfacc15,
+                emissive: 0xeab308,
+                emissiveIntensity: 0.6,
+                metalness: 0.4,
+                roughness: 0.2
+            });
+            const crystal = new THREE.Mesh(geo, mat);
+            group.add(crystal);
+
+            const ringGeo = new THREE.TorusGeometry(0.6, 0.03, 8, 24);
+            const ringMat = new THREE.MeshBasicMaterial({ color: 0xfef08a, transparent: true, opacity: 0.6 });
+            const ring = new THREE.Mesh(ringGeo, ringMat);
+            group.add(ring);
+
+            group.position.y = 0.85;
+            return group;
+        }
+
+        function createObstacleModel(type) {
+            const group = new THREE.Group();
+            if (type === 'blackhole') {
+                const coreGeo = new THREE.SphereGeometry(0.5, 24, 24);
+                const coreMat = new THREE.MeshBasicMaterial({ color: 0x000000 });
+                const core = new THREE.Mesh(coreGeo, coreMat);
+                group.add(core);
+
+                const swirlGeo = new THREE.TorusGeometry(0.75, 0.12, 12, 32);
+                const swirlMat = new THREE.MeshBasicMaterial({ color: 0xa855f7 });
+                const swirl = new THREE.Mesh(swirlGeo, swirlMat);
+                swirl.rotation.x = Math.PI / 2.2;
+                group.add(swirl);
+                group.position.y = 0.7;
+            } else {
+                const rockGeo = new THREE.DodecahedronGeometry(0.65, 1);
+                const rockMat = new THREE.MeshStandardMaterial({
+                    color: 0x64748b,
+                    roughness: 0.9,
+                    metalness: 0.1,
+                    flatShading: true
+                });
+                const rock = new THREE.Mesh(rockGeo, rockMat);
+                rock.scale.set(1, 0.8, 1.1);
+                group.add(rock);
+                group.position.y = 0.75;
+            }
+            return group;
+        }
+
+        function gridToWorld(gx, gz, gridSize) {
+            const offset = ((gridSize - 1) * TILE_SIZE) / 2;
+            return {
+                x: gx * TILE_SIZE - offset,
+                z: gz * TILE_SIZE - offset
+            };
+        }
+
+        function spawnThrusterFlame() {
+            if (!rocketMesh || !objectsGroup) return;
+            const geo = new THREE.SphereGeometry(0.14 + Math.random() * 0.1, 8, 8);
+            const isYellow = Math.random() > 0.4;
+            const mat = new THREE.MeshBasicMaterial({
+                color: isYellow ? 0xfacc15 : 0xf97316,
+                transparent: true,
+                opacity: 0.9
+            });
+            const p = new THREE.Mesh(geo, mat);
+            p.position.set(
+                rocketMesh.position.x + (Math.random() - 0.5) * 0.25,
+                0.15,
+                rocketMesh.position.z + (Math.random() - 0.5) * 0.25
+            );
+            objectsGroup.add(p);
+            flameParticles.push({ mesh: p, life: 1.0 });
+        }
+
+        /**************************************************************
+         * 5. KAMERA VE ETKİLEŞİM KONTROLLERİ
+         **************************************************************/
+        let cameraMode = 'free';
+        let camSpherical = {
+            radius: 17,
+            theta: 0.35,
+            phi: 0.95
+        };
+        let isDragging = false;
+        let prevMouse = { x: 0, y: 0 };
+
+        function setCameraMode(mode) {
+            sfx.click();
+            cameraMode = mode;
+            document.querySelectorAll('.cam-btn').forEach(btn => {
+                btn.classList.remove('bg-sky-600', 'text-white');
+                btn.classList.add('text-slate-300');
+            });
+            const activeBtn = document.getElementById('cam-' + mode);
+            if (activeBtn) {
+                activeBtn.classList.add('bg-sky-600', 'text-white');
+                activeBtn.classList.remove('text-slate-300');
+            }
+        }
+
+        container.addEventListener('pointerdown', (e) => {
+            isDragging = true;
+            prevMouse = { x: e.clientX, y: e.clientY };
+        });
+
+        window.addEventListener('pointerup', () => {
+            isDragging = false;
+        });
+
+        window.addEventListener('pointermove', (e) => {
+            if (!isDragging || cameraMode !== 'free') return;
+            const dx = e.clientX - prevMouse.x;
+            const dy = e.clientY - prevMouse.y;
+            prevMouse = { x: e.clientX, y: e.clientY };
+
+            camSpherical.theta -= dx * 0.008;
+            camSpherical.phi = Math.max(0.25, Math.min(1.4, camSpherical.phi - dy * 0.008));
+        });
+
+        container.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            camSpherical.radius = Math.max(8, Math.min(28, camSpherical.radius + e.deltaY * 0.01));
+        }, { passive: false });
+
+        function updateCamera() {
+            if (!camera) return;
+            if (cameraMode === 'top') {
+                const targetPos = new THREE.Vector3(0, 19, 0.01);
+                camera.position.lerp(targetPos, 0.08);
+                camera.lookAt(0, 0, 0);
+            } else if (cameraMode === 'follow' && rocketMesh) {
+                const angle = rocketMesh.rotation.y;
+                const behindX = rocketMesh.position.x + Math.sin(angle) * 6.5;
+                const behindZ = rocketMesh.position.z + Math.cos(angle) * 6.5;
+                const targetPos = new THREE.Vector3(behindX, 5.5, behindZ);
+                camera.position.lerp(targetPos, 0.08);
+                camera.lookAt(rocketMesh.position.x, 1.2, rocketMesh.position.z);
+            } else {
+                const x = camSpherical.radius * Math.sin(camSpherical.phi) * Math.sin(camSpherical.theta);
+                const y = camSpherical.radius * Math.cos(camSpherical.phi);
+                const z = camSpherical.radius * Math.sin(camSpherical.phi) * Math.cos(camSpherical.theta);
+                camera.position.lerp(new THREE.Vector3(x, y, z), 0.12);
+                camera.lookAt(0, 0.5, 0);
+            }
+        }
+
+        /**************************************************************
+         * 6. SEVİYE YÜKLEME, HARİTA MODALI VE SAHNE OLUŞTURMA
+         **************************************************************/
+        function toggleMissionCard(show) {
+            sfx.click();
+            const card = document.getElementById('mission-card');
+            const showBtn = document.getElementById('show-mission-btn');
+            if (show) {
+                card.classList.remove('hidden');
+                showBtn.classList.add('hidden');
+            } else {
+                card.classList.add('hidden');
+                showBtn.classList.remove('hidden');
+            }
+        }
+
+        function openLevelMapModal() {
+            sfx.click();
+            saveProgressToStorage();
+            renderLevelMapCards();
+            updateTotalStarsUI();
+            document.getElementById('level-map-modal').classList.remove('hidden');
+        }
+
+        function closeLevelMapModal() {
+            sfx.click();
+            document.getElementById('level-map-modal').classList.add('hidden');
+        }
+
+        function changeLevelRelative(delta) {
+            const next = (currentLevelIndex + delta + LEVELS.length) % LEVELS.length;
+            loadLevel(next);
+        }
+
+        function renderLevelMapCards() {
+            const phase1 = document.getElementById('map-phase-1');
+            const phase2 = document.getElementById('map-phase-2');
+
+            const makeCard = (lvl, idx) => {
+                const isCurrent = idx === currentLevelIndex;
+                const isDone = completedLevels.has(lvl.id);
+                const starsEarned = levelStarsEarned[lvl.id] || 0;
+                const savedBlocks = savedLevelWorkspaces[lvl.id] || [];
+                const blockCount = countTotalBlocksInList(savedBlocks);
+
+                const borderClass = isCurrent
+                    ? 'border-amber-400 bg-amber-500/20 shadow-lg shadow-amber-500/20'
+                    : (isDone ? 'border-emerald-500/60 bg-emerald-950/30 hover:bg-emerald-900/40' : 'border-slate-700 bg-slate-900/80 hover:bg-slate-800');
+
+                let starsHtml = '';
+                for (let s = 1; s <= 3; s++) {
+                    if (s <= starsEarned) {
+                        starsHtml += `<i class="fa-solid fa-star text-amber-400 text-xs"></i>`;
+                    } else {
+                        starsHtml += `<i class="fa-regular fa-star text-slate-600 text-xs"></i>`;
+                    }
+                }
+
+                return `
+                    <button onclick="selectLevelFromMap(${idx})" class="p-3 rounded-2xl border-2 ${borderClass} text-left transition flex flex-col justify-between group">
+                        <div class="flex items-center justify-between w-full mb-1">
+                            <span class="text-[11px] font-bold px-2 py-0.5 rounded-md ${lvl.requireAllStars ? 'bg-amber-500/30 text-amber-200' : 'bg-sky-500/30 text-sky-200'}">
+                                Bölüm ${lvl.id}
+                            </span>
+                            ${isDone ? '<i class="fa-solid fa-circle-check text-emerald-400 text-sm"></i>' : `<i class="fa-solid ${lvl.icon} text-slate-400 group-hover:text-white text-sm"></i>`}
+                        </div>
+                        <div class="font-bold text-xs sm:text-sm text-white truncate w-full">${lvl.targetName}</div>
+                        <div class="flex items-center justify-between w-full mt-2 pt-1.5 border-t border-slate-700/60">
+                            <div class="flex items-center space-x-1">${starsHtml}</div>
+                            <span class="text-[10px] font-bold ${starsEarned > 0 ? 'text-amber-300' : 'text-slate-500'}">${starsEarned}/3 ⭐</span>
+                        </div>
+                        <div class="text-[10px] mt-1 flex items-center justify-between text-slate-400">
+                            ${blockCount > 0
+                                ? `<span class="text-sky-300 font-medium"><i class="fa-solid fa-code"></i> ${blockCount} Blok Kayıtlı</span>`
+                                : `<span>${lvl.planetType === 'station' ? 'Üsse Kenetlen' : (lvl.requireAllStars ? 'Tüm Yıldızlar' : 'Gezegen Keşfi')}</span>`}
+                        </div>
+                    </button>
+                `;
+            };
+
+            phase1.innerHTML = LEVELS.slice(0, 10).map((l, i) => makeCard(l, i)).join('');
+            phase2.innerHTML = LEVELS.slice(10, 16).map((l, i) => makeCard(l, i + 10)).join('');
+        }
+
+        function selectLevelFromMap(idx) {
+            closeLevelMapModal();
+            loadLevel(idx);
+        }
+
+        let isFirstLoad = true;
+
+        function loadLevel(index) {
+            if (isRunning) stopRequested = true;
+
+            if (!isFirstLoad) {
+                const prevLvl = LEVELS[currentLevelIndex];
+                if (prevLvl && Array.isArray(programBlocks)) {
+                    savedLevelWorkspaces[prevLvl.id] = JSON.parse(JSON.stringify(programBlocks));
+                }
+            }
+            isFirstLoad = false;
+
+            currentLevelIndex = index;
+            const lvl = LEVELS[index];
+
+            document.getElementById('header-level-title').textContent = `Bölüm ${lvl.id} / ${LEVELS.length}`;
+            document.getElementById('header-level-sub').textContent = `${lvl.targetName} ${lvl.planetType === 'station' ? '(Kenetlenme)' : (lvl.requireAllStars ? '(Yıldız Görevi)' : '(Keşif)')}`;
+
+            document.getElementById('level-badge').textContent = `Bölüm ${lvl.id} / ${LEVELS.length}`;
+            document.getElementById('target-planet-name').innerHTML = `<i class="fa-solid ${lvl.icon}"></i> Hedef: ${lvl.targetName}`;
+            document.getElementById('level-title').textContent = lvl.name;
+            document.getElementById('level-desc').textContent = lvl.description;
+            document.getElementById('ideal-blocks-label').textContent = `İdeal Kod: ~${lvl.idealBlocks} Blok`;
+
+            const reqTag = document.getElementById('star-req-tag');
+            const missionTypeLabel = document.getElementById('mission-type-label');
+            const scanBtnLabel = document.getElementById('scan-btn-label');
+            const scanBtnIcon = document.getElementById('scan-btn-icon');
+
+            if (lvl.planetType === 'station') {
+                reqTag.classList.add('hidden');
+                missionTypeLabel.innerHTML = `<i class="fa-solid fa-link text-sky-400"></i> <span class="text-sky-300 font-bold">Uzay Üssü Kenetlenme Görevi</span>`;
+                scanBtnLabel.textContent = "Üsse Kenetlen!";
+                if (scanBtnIcon) scanBtnIcon.className = "fa-solid fa-link";
+            } else if (lvl.requireAllStars) {
+                reqTag.classList.remove('hidden');
+                missionTypeLabel.innerHTML = `<i class="fa-solid fa-bolt text-amber-400"></i> <span class="text-amber-300 font-bold">Tüm Yıldızları Toplamak Zorunlu!</span>`;
+                if (lvl.id === 16) {
+                    scanBtnLabel.textContent = "Dünya'ya İniş Yap!";
+                    if (scanBtnIcon) scanBtnIcon.className = "fa-solid fa-earth-americas";
+                } else {
+                    scanBtnLabel.textContent = "Geçide Gir!";
+                    if (scanBtnIcon) scanBtnIcon.className = "fa-solid fa-circle-nodes";
+                }
+            } else {
+                reqTag.classList.add('hidden');
+                missionTypeLabel.innerHTML = `<i class="fa-solid fa-compass text-emerald-400"></i> <span class="text-emerald-300">Gezegen Keşif Görevi</span>`;
+                scanBtnLabel.textContent = "Gezegeni Keşfet!";
+                if (scanBtnIcon) scanBtnIcon.className = "fa-solid fa-satellite-dish";
+            }
+
+            selectedLoopId = null;
+            if (savedLevelWorkspaces[lvl.id] && Array.isArray(savedLevelWorkspaces[lvl.id])) {
+                programBlocks = JSON.parse(JSON.stringify(savedLevelWorkspaces[lvl.id]));
+            } else {
+                programBlocks = [];
+            }
+
+            renderWorkspace();
+            updateTotalStarsUI();
+            build3DLevel(lvl);
+        }
+
+        function build3DLevel(lvl) {
+            if (!gridGroup || !objectsGroup) return;
+
+            while (gridGroup.children.length > 0) gridGroup.remove(gridGroup.children[0]);
+            while (objectsGroup.children.length > 0) objectsGroup.remove(objectsGroup.children[0]);
+            starMeshes = [];
+            obstacleMeshes = [];
+            flameParticles = [];
+
+            for (let gx = 0; gx < lvl.gridSize; gx++) {
+                for (let gz = 0; gz < lvl.gridSize; gz++) {
+                    const pos = gridToWorld(gx, gz, lvl.gridSize);
+                    const isStart = (gx === lvl.start.x && gz === lvl.start.z);
+                    const isTarget = (gx === lvl.target.x && gz === lvl.target.z);
+
+                    const tileGeo = new THREE.BoxGeometry(TILE_SIZE * 0.92, 0.25, TILE_SIZE * 0.92);
+                    let tileColor = 0x1e293b;
+                    let borderColor = 0x38bdf8;
+
+                    if (isStart) {
+                        tileColor = 0x1e3a8a;
+                        borderColor = 0x60a5fa;
+                    } else if (isTarget) {
+                        tileColor = 0x064e3b;
+                        borderColor = 0x34d399;
+                    }
+
+                    const tileMat = new THREE.MeshStandardMaterial({
+                        color: tileColor,
+                        roughness: 0.4,
+                        metalness: 0.3,
+                        transparent: true,
+                        opacity: 0.85
+                    });
+                    const tile = new THREE.Mesh(tileGeo, tileMat);
+                    tile.position.set(pos.x, -0.125, pos.z);
+                    gridGroup.add(tile);
+
+                    const edges = new THREE.EdgesGeometry(tileGeo);
+                    const line = new THREE.LineSegments(
+                        edges,
+                        new THREE.LineBasicMaterial({ color: borderColor, transparent: true, opacity: 0.45 })
+                    );
+                    tile.add(line);
+                }
+            }
+
+            const targetPos = gridToWorld(lvl.target.x, lvl.target.z, lvl.gridSize);
+            targetPlanetMesh = createPlanetModel(lvl.planetType);
+            targetPlanetMesh.position.x = targetPos.x;
+            targetPlanetMesh.position.z = targetPos.z;
+            objectsGroup.add(targetPlanetMesh);
+
+            lvl.stars.forEach(s => {
+                const sPos = gridToWorld(s.x, s.z, lvl.gridSize);
+                const sMesh = createStarModel();
+                sMesh.position.x = sPos.x;
+                sMesh.position.z = sPos.z;
+                objectsGroup.add(sMesh);
+                starMeshes.push({ mesh: sMesh, x: s.x, z: s.z, collected: false });
+            });
+
+            lvl.obstacles.forEach(o => {
+                const oPos = gridToWorld(o.x, o.z, lvl.gridSize);
+                const oMesh = createObstacleModel(o.type);
+                oMesh.position.x = oPos.x;
+                oMesh.position.z = oPos.z;
+                objectsGroup.add(oMesh);
+                obstacleMeshes.push({ mesh: oMesh, x: o.x, z: o.z, type: o.type });
+            });
+
+            rocketMesh = createRocketModel();
+            objectsGroup.add(rocketMesh);
+
+            resetLevelState(false);
+        }
+
+        function resetLevelState(playSound = true) {
+            if (isRunning) {
+                stopRequested = true;
+            }
+            if (playSound) sfx.click();
+
+            const lvl = LEVELS[currentLevelIndex];
+            rocketState.x = lvl.start.x;
+            rocketState.z = lvl.start.z;
+            rocketState.dir = lvl.start.dir;
+            rocketState.collectedStars = 0;
+
+            const startWorld = gridToWorld(lvl.start.x, lvl.start.z, lvl.gridSize);
+            if (rocketMesh) {
+                rocketMesh.position.set(startWorld.x, 0, startWorld.z);
+                rocketMesh.rotation.set(0, -rocketState.dir * (Math.PI / 2), 0);
+                rocketMesh.scale.set(1, 1, 1);
+            }
+
+            starMeshes.forEach(s => {
+                s.collected = false;
+                s.mesh.visible = true;
+                s.mesh.scale.set(1, 1, 1);
+            });
+
+            updateStarCounterUI();
+            clearBlockHighlights();
+            hideStatusToast();
+        }
+
+        function updateStarCounterUI() {
+            const lvl = LEVELS[currentLevelIndex];
+            document.getElementById('star-counter').textContent = `${rocketState.collectedStars} / ${lvl.stars.length}`;
+        }
+
+        /**************************************************************
+         * 7. ALGORİTMA ÇALIŞTIRICI VE ANİMASYON SİSTEMİ
+         **************************************************************/
+        function showStatusToast(message, iconClass = 'fa-circle-info text-sky-400', borderClass = 'border-sky-400') {
+            const toast = document.getElementById('status-toast');
+            const icon = document.getElementById('status-icon');
+            const text = document.getElementById('status-text');
+
+            toast.className = `absolute bottom-4 left-1/2 transform -translate-x-1/2 glass-panel px-5 py-2.5 rounded-2xl border-2 ${borderClass} shadow-2xl flex items-center space-x-3 transition-all duration-300 opacity-100 translate-y-0 z-30`;
+            icon.className = `fa-solid ${iconClass} text-lg`;
+            text.textContent = message;
+        }
+
+        function hideStatusToast() {
+            const toast = document.getElementById('status-toast');
+            toast.classList.add('opacity-0', 'translate-y-4');
+        }
+
+        function highlightBlock(blockId) {
+            clearBlockHighlights();
+            const el = document.getElementById(blockId);
+            if (el) {
+                el.classList.add('executing-block');
+                el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+        }
+
+        function clearBlockHighlights() {
+            document.querySelectorAll('.executing-block').forEach(el => {
+                el.classList.remove('executing-block');
+            });
+        }
+
+        function flattenProgram(blocks) {
+            const steps = [];
+            blocks.forEach(b => {
+                if (b.type === 'LOOP') {
+                    for (let i = 0; i < b.count; i++) {
+                        b.children.forEach(child => {
+                            steps.push({ id: child.id, type: child.type });
+                        });
+                    }
+                } else {
+                    steps.push({ id: b.id, type: b.type });
+                }
+            });
+            return steps;
+        }
+
+        function animateValue(duration, onUpdate) {
+            return new Promise(resolve => {
+                const start = performance.now();
+                function step(now) {
+                    if (stopRequested) {
+                        resolve(false);
+                        return;
+                    }
+                    const elapsed = now - start;
+                    const progress = Math.min(elapsed / duration, 1);
+                    const eased = progress < 0.5 ? 2 * progress * progress : 1 - Math.pow(-2 * progress + 2, 2) / 2;
+                    onUpdate(eased);
+                    if (progress < 1) {
+                        requestAnimationFrame(step);
+                    } else {
+                        resolve(true);
+                    }
+                }
+                requestAnimationFrame(step);
+            });
+        }
+
+        async function runProgram() {
+            if (isRunning) return;
+
+            if (programBlocks.length === 0) {
+                sfx.crash();
+                showStatusToast("Önce yukarıdan komut blokları eklemelisin!", "fa-triangle-exclamation text-amber-400", "border-amber-400");
+                setTimeout(hideStatusToast, 2500);
+                return;
+            }
+
+            saveProgressToStorage();
+            resetLevelState(false);
+            isRunning = true;
+            stopRequested = false;
+
+            const runBtn = document.getElementById('run-btn');
+            runBtn.disabled = true;
+            runBtn.classList.add('opacity-60', 'cursor-not-allowed');
+
+            const steps = flattenProgram(programBlocks);
+            const lvl = LEVELS[currentLevelIndex];
+            let missionSuccess = false;
+
+            showStatusToast("BİLFEN Roketi çalıştırılıyor...", "fa-shuttle-space text-sky-400", "border-sky-400");
+
+            for (let i = 0; i < steps.length; i++) {
+                if (stopRequested) break;
+
+                const step = steps[i];
+                highlightBlock(step.id);
+
+                if (step.type === 'FORWARD') {
+                    sfx.thrust();
+                    thrusterActive = true;
+
+                    const dx = (rocketState.dir === 1) ? 1 : (rocketState.dir === 3 ? -1 : 0);
+                    const dz = (rocketState.dir === 2) ? 1 : (rocketState.dir === 0 ? -1 : 0);
+
+                    const nextX = rocketState.x + dx;
+                    const nextZ = rocketState.z + dz;
+
+                    if (nextX < 0 || nextX >= lvl.gridSize || nextZ < 0 || nextZ >= lvl.gridSize) {
+                        thrusterActive = false;
+                        sfx.crash();
+                        showStatusToast("Eyvah! Roket uzay ızgarasının dışına çıktı!", "fa-burst text-rose-400", "border-rose-500");
+                        await animateRocketShake();
+                        break;
+                    }
+
+                    const startPos = gridToWorld(rocketState.x, rocketState.z, lvl.gridSize);
+                    const endPos = gridToWorld(nextX, nextZ, lvl.gridSize);
+
+                    const completed = await animateValue(550, (p) => {
+                        rocketMesh.position.x = startPos.x + (endPos.x - startPos.x) * p;
+                        rocketMesh.position.z = startPos.z + (endPos.z - startPos.z) * p;
+                        rocketMesh.position.y = Math.sin(p * Math.PI) * 0.35;
+                    });
+                    thrusterActive = false;
+                    if (!completed) break;
+
+                    rocketState.x = nextX;
+                    rocketState.z = nextZ;
+
+                    const hitObstacle = obstacleMeshes.find(o => o.x === rocketState.x && o.z === rocketState.z);
+                    if (hitObstacle) {
+                        sfx.crash();
+                        const obsName = hitObstacle.type === 'blackhole' ? 'kara deliğe kapıldı!' : 'asteroide çarptı!';
+                        showStatusToast(`Dikkat! Roket ${obsName}`, "fa-meteor text-rose-400", "border-rose-500");
+                        await animateRocketShake();
+                        break;
+                    }
+
+                    const foundStar = starMeshes.find(s => !s.collected && s.x === rocketState.x && s.z === rocketState.z);
+                    if (foundStar) {
+                        foundStar.collected = true;
+                        foundStar.mesh.visible = false;
+                        rocketState.collectedStars++;
+                        updateStarCounterUI();
+                        sfx.star();
+                        showStatusToast("Harika! Enerji yıldızı toplandı! ⭐", "fa-star text-amber-400", "border-amber-400");
+                    }
+
+                } else if (step.type === 'LEFT' || step.type === 'RIGHT') {
+                    sfx.turn();
+                    const startRot = rocketMesh.rotation.y;
+                    const turnDir = step.type === 'LEFT' ? 1 : -1;
+                    const endRot = startRot + turnDir * (Math.PI / 2);
+
+                    const completed = await animateValue(400, (p) => {
+                        rocketMesh.rotation.y = startRot + (endRot - startRot) * p;
+                    });
+                    if (!completed) break;
+
+                    if (step.type === 'LEFT') {
+                        rocketState.dir = (rocketState.dir + 3) % 4;
+                    } else {
+                        rocketState.dir = (rocketState.dir + 1) % 4;
+                    }
+                    rocketMesh.rotation.y = -rocketState.dir * (Math.PI / 2);
+
+                } else if (step.type === 'SCAN') {
+                    sfx.scan();
+                    const baseRot = rocketMesh.rotation.y;
+                    await animateValue(600, (p) => {
+                        rocketMesh.rotation.y = baseRot + p * Math.PI * 2;
+                        rocketMesh.position.y = Math.sin(p * Math.PI) * 0.6;
+                    });
+                    rocketMesh.rotation.y = baseRot;
+
+                    if (rocketState.x === lvl.target.x && rocketState.z === lvl.target.z) {
+                        if (lvl.requireAllStars && rocketState.collectedStars < lvl.stars.length) {
+                            sfx.crash();
+                            showStatusToast(
+                                `Dünya'ya dönüş enerjisi eksik! Önce tüm yıldızları (${rocketState.collectedStars}/${lvl.stars.length}) toplamalısın! ⭐`,
+                                "fa-battery-quarter text-amber-400",
+                                "border-amber-400"
+                            );
+                            await animateRocketShake();
+                            break;
+                        }
+
+                        missionSuccess = true;
+                        completedLevels.add(lvl.id);
+                        sfx.victory();
+                        const successMsg = lvl.planetType === 'station'
+                            ? "Tebrikler! Araştırma Üssü'ne başarıyla kenetlendin!"
+                            : `Tebrikler! ${lvl.targetName} görevi başarıyla tamamlandı!`;
+                        showStatusToast(successMsg, "fa-check-circle text-emerald-400", "border-emerald-400");
+                        setTimeout(() => openVictoryModal(lvl), 500);
+                        break;
+                    } else {
+                        sfx.crash();
+                        showStatusToast(`Henüz ${lvl.targetName} noktasına ulaşmadın!`, "fa-circle-exclamation text-amber-400", "border-amber-400");
+                        break;
+                    }
+                }
+
+                await new Promise(r => setTimeout(r, 120));
+            }
+
+            if (!missionSuccess && !stopRequested) {
+                const onTarget = (rocketState.x === lvl.target.x && rocketState.z === lvl.target.z);
+                if (onTarget) {
+                    if (lvl.requireAllStars && rocketState.collectedStars < lvl.stars.length) {
+                        showStatusToast(`Hedefe ulaştın ama ${lvl.stars.length - rocketState.collectedStars} yıldız eksik kaldı!`, "fa-star-half-stroke text-amber-400", "border-amber-400");
+                    } else {
+                        const actionBlockName = getCommandMeta('SCAN').label;
+                        showStatusToast(`Hedefe ulaştın! Şimdi kodun sonuna yeşil '${actionBlockName}' bloğu ekle!`, "fa-satellite-dish text-emerald-400", "border-emerald-400");
+                    }
+                }
+            }
+
+            clearBlockHighlights();
+            isRunning = false;
+            runBtn.disabled = false;
+            runBtn.classList.remove('opacity-60', 'cursor-not-allowed');
+        }
+
+        async function animateRocketShake() {
+            if (!rocketMesh) return;
+            const baseX = rocketMesh.position.x;
+            const baseZ = rocketMesh.position.z;
+            await animateValue(500, (p) => {
+                const shake = Math.sin(p * Math.PI * 8) * 0.25 * (1 - p);
+                rocketMesh.position.x = baseX + shake;
+                rocketMesh.position.z = baseZ + shake;
+            });
+            rocketMesh.position.x = baseX;
+            rocketMesh.position.z = baseZ;
+        }
+
+        /**************************************************************
+         * 8. BAŞARI VE GEZEGEN BİLGİ MODALI
+         **************************************************************/
+        function openVictoryModal(lvl) {
+            const modal = document.getElementById('victory-modal');
+            const card = document.getElementById('victory-card');
+
+            document.getElementById('modal-planet-icon').className = `fa-solid ${lvl.icon} text-4xl text-amber-400`;
+            document.getElementById('modal-title').textContent = lvl.id === 16
+                ? "Dünya'ya Hoş Geldin! 🎉🌍"
+                : (lvl.planetType === 'station' ? "Araştırma Üssü'ne Kenetlenildi! 🛰️" : `${lvl.targetName} Tamamlandı!`);
+
+            const usedBlocks = countTotalBlocksInList(programBlocks);
+
+            document.getElementById('modal-code-stats').textContent =
+                `Kullanılan Kod: ${usedBlocks} Blok (İdeal: ~${lvl.idealBlocks}) | Yıldızlar: ${rocketState.collectedStars}/${lvl.stars.length}`;
+
+            document.getElementById('modal-fact').textContent = lvl.fact;
+
+            const totalStars = lvl.stars.length;
+            let earned = 1;
+            if (rocketState.collectedStars === totalStars && usedBlocks <= lvl.idealBlocks + 2) earned = 3;
+            else if (rocketState.collectedStars === totalStars || rocketState.collectedStars > 0) earned = 2;
+
+            const prevBest = levelStarsEarned[lvl.id] || 0;
+            if (earned > prevBest) {
+                levelStarsEarned[lvl.id] = earned;
+            }
+            saveProgressToStorage();
+
+            let starsHtml = '';
+            for (let i = 1; i <= 3; i++) {
+                if (i <= earned) {
+                    starsHtml += `<i class="fa-solid fa-star text-amber-400 drop-shadow"></i>`;
+                } else {
+                    starsHtml += `<i class="fa-regular fa-star text-slate-600"></i>`;
+                }
+            }
+            document.getElementById('modal-stars').innerHTML = starsHtml;
+
+            const nextBtn = document.getElementById('next-level-btn');
+            if (currentLevelIndex < LEVELS.length - 1) {
+                nextBtn.innerHTML = `<span>Bölüm ${lvl.id + 1}'e Geç</span><i class="fa-solid fa-arrow-right"></i>`;
+            } else {
+                nextBtn.innerHTML = `<span>Haritayı Gör</span><i class="fa-solid fa-map"></i>`;
+            }
+
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                card.classList.remove('scale-95');
+                card.classList.add('scale-100');
+            }, 20);
+        }
+
+        function closeVictoryModal() {
+            sfx.click();
+            const modal = document.getElementById('victory-modal');
+            const card = document.getElementById('victory-card');
+            modal.classList.add('opacity-0');
+            card.classList.remove('scale-100');
+            card.classList.add('scale-95');
+            setTimeout(() => modal.classList.add('hidden'), 300);
+        }
+
+        function goToNextLevel() {
+            closeVictoryModal();
+            if (currentLevelIndex < LEVELS.length - 1) {
+                loadLevel(currentLevelIndex + 1);
+            } else {
+                openLevelMapModal();
+            }
+        }
+
+        /**************************************************************
+         * 9. ANA RENDER DÖNGÜSÜ VE BAŞLATMA
+         **************************************************************/
+        function animate() {
+            requestAnimationFrame(animate);
+            if (!renderer || !scene || !camera) return;
+
+            const t = clock ? clock.getElapsedTime() : performance.now() * 0.001;
+
+            if (targetPlanetMesh) {
+                targetPlanetMesh.rotation.y = t * 0.5;
+            }
+
+            starMeshes.forEach((s, idx) => {
+                if (!s.collected) {
+                    s.mesh.rotation.y = t * 1.8 + idx;
+                    s.mesh.position.y = 0.85 + Math.sin(t * 3 + idx) * 0.15;
+                }
+            });
+
+            obstacleMeshes.forEach((o, idx) => {
+                o.mesh.rotation.y = t * 0.8 + idx;
+                o.mesh.rotation.x = Math.sin(t * 0.5 + idx) * 0.3;
+            });
+
+            if (rocketMesh && !isRunning) {
+                rocketMesh.position.y = Math.sin(t * 3.5) * 0.06;
+            }
+            if (thrusterActive) {
+                spawnThrusterFlame();
+            }
+
+            for (let i = flameParticles.length - 1; i >= 0; i--) {
+                const fp = flameParticles[i];
+                fp.life -= 0.06;
+                fp.mesh.position.y -= 0.03;
+                fp.mesh.scale.setScalar(Math.max(0.01, fp.life));
+                fp.mesh.material.opacity = fp.life;
+                if (fp.life <= 0) {
+                    objectsGroup.remove(fp.mesh);
+                    flameParticles.splice(i, 1);
+                }
+            }
+
+            updateCamera();
+            renderer.render(scene, camera);
+        }
+
+        window.addEventListener('resize', handleResize);
+
+        function startApp() {
+            initThreeScene();
+            loadProgressFromStorage();
+            loadLevel(0);
+            handleResize();
+            setTimeout(handleResize, 150);
+            setTimeout(handleResize, 500);
+            animate();
+        }
+
+        if (document.readyState === 'complete' || document.readyState === 'interactive') {
+            setTimeout(startApp, 50);
+        } else {
+            window.addEventListener('DOMContentLoaded', () => setTimeout(startApp, 50));
+        }
+    </script>
+</body>
+</html>
